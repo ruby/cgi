@@ -7,3 +7,6 @@
 /spec/reports/
 /tmp/
 /Gemfile.lock
+*.bundle
+*.so
+*.dll
