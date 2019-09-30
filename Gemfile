@@ -1,4 +1,8 @@
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in cgi.gemspec
-gemspec
+group :development do
+  gem "bundler"
+  gem "rake"
+  gem "rake-compiler"
+  gem "test-unit"
+end
