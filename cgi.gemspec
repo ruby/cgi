@@ -4,7 +4,7 @@ require "cgi/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "cgi"
-  spec.version       = Cgi::VERSION
+  spec.version       = CGI::VERSION
   spec.authors       = ["Hiroshi SHIBATA"]
   spec.email         = ["hsbt@ruby-lang.org"]
 
