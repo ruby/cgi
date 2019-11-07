@@ -13,6 +13,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{Support for the Common Gateway Interface protocol.}
   spec.description   = %q{Support for the Common Gateway Interface protocol.}
   spec.homepage      = "https://github.com/ruby/cgi"
+  spec.license       = "BSD-2-Clause"
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
