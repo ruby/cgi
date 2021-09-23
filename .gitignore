@@ -9,6 +9,7 @@
 /tmp/
 /ChangeLog
 /Gemfile.lock
+*.jar
 *.bundle
 *.so
 *.dll
