@@ -3,9 +3,11 @@
 /_yardoc/
 /coverage/
 /doc/
+/logs/
 /pkg/
 /spec/reports/
 /tmp/
+/ChangeLog
 /Gemfile.lock
 *.bundle
 *.so
