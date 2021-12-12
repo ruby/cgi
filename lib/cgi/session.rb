@@ -218,8 +218,11 @@ class CGI
       prefix = option['prefix']
       suffix = option['suffix']
       algorithm = option['digest'] || 'SHA256'
-      require 'digest'
-      digest = Digest(algorithm).hexdigest(session_id)[0,16]
+      if String === algorithm
+        require 'digest'
+        algorithm = Digest(algorithm)
+      end
+      digest = algorithm.hexdigest(session_id)[0,16]
       path = dir+"/"
       path << prefix if prefix
       path << digest
