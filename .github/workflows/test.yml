@@ -7,10 +7,12 @@ jobs:
     name: build (${{ matrix.ruby }} / ${{ matrix.os }})
     strategy:
       matrix:
-        ruby: [ '3.0', 2.7, 2.6, 2.5, head ]
+        ruby: [ '3.0', 2.7, 2.6, 2.5, head, jruby ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
         exclude:
           - { os: windows-latest, ruby: head }
+          - { os: macos-latest, ruby: jruby }
+          - { os: windows-latest, ruby: jruby }
         include:
           - { os: windows-latest, ruby: mingw }
           - { os: windows-latest, ruby: mswin }
