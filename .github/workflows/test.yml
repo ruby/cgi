@@ -4,16 +4,10 @@ on: [push, pull_request]
 
 jobs:
   ruby-versions:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    outputs:
-      versions: ${{ steps.versions.outputs.value }}
-    steps:
-      - id: versions
-        run: |
-          versions=$(curl -s 'https://cache.ruby-lang.org/pub/misc/ci_versions/cruby.json' | jq -c '. + ["2.5", "jruby"]')
-           echo "value=${versions}" >> $GITHUB_OUTPUT
+    uses: ruby/actions/.github/workflows/ruby_versions.yml@master
+    with:
+      engine: cruby-jruby
+      min_version: 2.5
   test:
     needs: ruby-versions
     name: build (${{ matrix.ruby }} / ${{ matrix.os }})
@@ -26,6 +20,8 @@ jobs:
           - { os: windows-latest, ruby: head }
           - { os: macos-latest, ruby: jruby }
           - { os: windows-latest, ruby: jruby }
+          - { os: macos-latest, ruby: jruby-head }
+          - { os: windows-latest, ruby: jruby-head }
         include:
           - { os: windows-latest, ruby: mingw }
           - { os: windows-latest, ruby: mswin }
