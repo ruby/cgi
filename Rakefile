@@ -11,7 +11,7 @@ Rake::JavaExtensionTask.new("escape") do |ext|
   task :build => :compile
 end
 
-unless RUBY_ENGINE == 'jruby'
+if RUBY_ENGINE == 'ruby'
   require 'rake/extensiontask'
   extask = Rake::ExtensionTask.new("cgi/escape") do |x|
     x.lib_dir.sub!(%r[(?=/|\z)], "/#{RUBY_VERSION}/#{x.platform}")
@@ -22,7 +22,7 @@ Rake::TestTask.new(:test) do |t|
   t.libs << "test/lib"
   if RUBY_ENGINE == 'jruby'
     t.libs << "ext/java/org/jruby/ext/cgi/escape/lib"
-  else
+  elsif RUBY_ENGINE == 'ruby'
     t.libs << "lib/#{RUBY_VERSION}/#{extask.platform}"
   end
   t.ruby_opts << "-rhelper"
