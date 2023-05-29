@@ -6,7 +6,6 @@ jobs:
   ruby-versions:
     uses: ruby/actions/.github/workflows/ruby_versions.yml@master
     with:
-      engine: cruby-jruby
       min_version: 2.5
   test:
     needs: ruby-versions
@@ -22,6 +21,8 @@ jobs:
           - { os: windows-latest, ruby: jruby }
           - { os: macos-latest, ruby: jruby-head }
           - { os: windows-latest, ruby: jruby-head }
+          - { os: windows-latest, ruby: truffleruby }
+          - { os: windows-latest, ruby: truffleruby-head }
         include:
           - { os: windows-latest, ruby: mingw }
           - { os: windows-latest, ruby: mswin }
