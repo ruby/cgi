@@ -38,4 +38,4 @@ jobs:
     - name: Build
       run: rake compile
     - name: Run test
-      run: rake test
+      run: bundle exec rake test
