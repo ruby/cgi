@@ -263,7 +263,7 @@ public class CGIEscape implements Library {
 
     static final byte[] upper_hexdigits = "0123456789ABCDEF".getBytes(RubyEncoding.UTF8);
 
-    static IRubyObject optimized_escape(Ruby runtime, RubyString str) {
+    static IRubyObject optimized_escape(Ruby runtime, RubyString str, boolean escapePlus) {
         int i, len, beg = 0;
         RubyString dest = null;
         byte[] cstrBytes;
@@ -285,7 +285,7 @@ public class CGIEscape implements Library {
                 dest.cat(cstrBytes, cstr + beg, i - beg);
                 beg = i + 1;
 
-                if (c == ' ') {
+                if (escapePlus && c == ' ') {
                     dest.cat('+');
                 } else {
                     buf[1] = upper_hexdigits[(c >> 4) & 0xf];
@@ -305,7 +305,7 @@ public class CGIEscape implements Library {
     }
 
     static IRubyObject
-    optimized_unescape(ThreadContext context, RubyString str, IRubyObject encoding) {
+    optimized_unescape(ThreadContext context, RubyString str, IRubyObject encoding, boolean unescapePlus) {
         int i, len, beg = 0;
         RubyString dest = null;
         byte[] cstrBytes;
@@ -331,7 +331,7 @@ public class CGIEscape implements Library {
                 buf = ((char_to_number(cstrBytes[cstr + i + 1]) << 4)
                         | char_to_number(cstrBytes[cstr + i + 2]));
                 clen = 2;
-            } else if (c == '+') {
+            } else if (unescapePlus && c == '+') {
                 buf = ' ';
             } else {
                 continue;
@@ -416,7 +416,25 @@ public class CGIEscape implements Library {
         RubyString str = _str.convertToString();
 
         if (str.getEncoding().isAsciiCompatible()) {
-            return optimized_escape(context.runtime, str);
+            return optimized_escape(context.runtime, str, true);
+        } else {
+            return Helpers.invokeSuper(context, self, _str, Block.NULL_BLOCK);
+        }
+    }
+
+    /*
+     *  call-seq:
+     *     CGI.escapeURIComponent(string) -> string
+     *
+     *  Returns URL-escaped string following RFC 3986.
+     *
+     */
+    @JRubyMethod(name = "escapeURIComponent", alias = { "escape_uri_component" }, module = true, frame = true)
+    public static IRubyObject cgiesc_escape_uri_component(ThreadContext context, IRubyObject self, IRubyObject _str) {
+        RubyString str = _str.convertToString();
+
+        if (str.getEncoding().isAsciiCompatible()) {
+            return optimized_escape(context.runtime, str, false);
         } else {
             return Helpers.invokeSuper(context, self, _str, Block.NULL_BLOCK);
         }
@@ -443,7 +461,28 @@ public class CGIEscape implements Library {
 
         if (str.getEncoding().isAsciiCompatible()) {
             IRubyObject enc = accept_charset(argv, argv.length - 1, 1, self);
-            return optimized_unescape(context, str, enc);
+            return optimized_unescape(context, str, enc, true);
+        } else {
+            return Helpers.invokeSuper(context, self, argv, Block.NULL_BLOCK);
+        }
+    }
+
+    /*
+     *  call-seq:
+     *     CGI.unescapeURIComponent(string, encoding=@@accept_charset) -> string
+     *
+     *  Returns URL-unescaped string following RFC 3986.
+     *
+     */
+    @JRubyMethod(name = "unescapeURIComponent", alias = { "unescape_uri_component" }, required = 1, optional = 1, module = true, frame = true)
+    public static IRubyObject cgiesc_unescape_uri_component(ThreadContext context, IRubyObject self, IRubyObject[] argv) {
+        IRubyObject _str = argv[0];
+
+        RubyString str = _str.convertToString();
+
+        if (str.getEncoding().isAsciiCompatible()) {
+            IRubyObject enc = accept_charset(argv, argv.length - 1, 1, self);
+            return optimized_unescape(context, str, enc, false);
         } else {
             return Helpers.invokeSuper(context, self, argv, Block.NULL_BLOCK);
         }
