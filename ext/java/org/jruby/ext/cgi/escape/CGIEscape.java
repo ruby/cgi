@@ -140,7 +140,7 @@ public class CGIEscape implements Library {
         int charlimit = (enc instanceof UTF8Encoding) ? UNICODE_MAX :
                 (enc instanceof ISO8859_1Encoding) ? 256 :
                         128;
-        int i, len, beg = 0;
+        int i, j, len, beg = 0;
         int clen = 0, plen;
         boolean overflow = false;
         byte[] cstrBytes;
@@ -160,6 +160,7 @@ public class CGIEscape implements Library {
             plen = i - beg;
             if (++i >= len) break;
             c = cstrBytes[cstr + i] & 0xFF;
+            j = i;
             switch (c) {
                 case 'a':
                     ++i;
@@ -169,28 +170,40 @@ public class CGIEscape implements Library {
                     } else if (MATCH(MPSEMI, len, i, cstrBytes, cstr)) {
                         i += MPSEMI.length - 1;
                         c = '&';
-                    } else continue;
+                    } else {
+                        i = j;
+                        continue;
+                    }
                     break;
                 case 'q':
                     ++i;
                     if (MATCH(UOTSEMI, len, i, cstrBytes, cstr)) {
                         i += UOTSEMI.length - 1;
                         c = '"';
-                    } else continue;
+                    } else {
+                        i = j;
+                        continue;
+                    }
                     break;
                 case 'g':
                     ++i;
                     if (MATCH(TSEMI, len, i, cstrBytes, cstr)) {
                         i += TSEMI.length - 1;
                         c = '>';
-                    } else continue;
+                    } else {
+                        i = j;
+                        continue;
+                    }
                     break;
                 case 'l':
                     ++i;
                     if (MATCH(TSEMI, len, i, cstrBytes, cstr)) {
                         i += TSEMI.length - 1;
                         c = '<';
-                    } else continue;
+                    } else {
+                        i = j;
+                        continue;
+                    }
                     break;
                 case '#':
                     if (len - ++i >= 2 && Character.isDigit(cstrBytes[cstr + i])) {
@@ -203,9 +216,15 @@ public class CGIEscape implements Library {
                         cc = ruby_scan_digits(cstrBytes, cstr + i, len - i, 16, clenOverflow);
                         clen = clenOverflow[0];
                         overflow = clenOverflow[1] == 1;
-                    } else continue;
+                    } else {
+                        i = j;
+                        continue;
+                    }
                     i += clen;
-                    if (overflow || cc >= charlimit || i >= len || cstrBytes[cstr + i] != ';') continue;
+                    if (overflow || cc >= charlimit || i >= len || cstrBytes[cstr + i] != ';') {
+                        i = j;
+                        continue;
+                    }
                     if (dest == null) {
                         dest = RubyString.newStringLight(runtime, len);
                     }
