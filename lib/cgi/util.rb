@@ -74,7 +74,7 @@ module CGI::Util
   # Escape special characters in HTML, namely '&\"<>
   #   CGI.escapeHTML('Usage: foo "bar" <baz>')
   #      # => "Usage: foo &quot;bar&quot; &lt;baz&gt;"
-  def escapeHTML(string)
+  def escapeHTML(string, escape_table = nil)
     enc = string.encoding
     unless enc.ascii_compatible?
       if enc.dummy?
@@ -82,13 +82,27 @@ module CGI::Util
         enc = Encoding::Converter.asciicompat_encoding(enc)
         string = enc ? string.encode(enc) : string.b
       end
-      table = Hash[TABLE_FOR_ESCAPE_HTML__.map {|pair|pair.map {|s|s.encode(enc)}}]
-      string = string.gsub(/#{"['&\"<>]".encode(enc)}/, table)
+      if escape_table
+        table = Hash[escape_table.map {|pair| pair.map {|s|s.encode(enc)}}]
+        pattern = "[".encode(enc)
+        escape_table.each_key do |key|
+          pattern << Regexp.escape(key).encode(enc)
+        end
+        pattern << "]".encode(enc)
+        string = string.gsub(/#{pattern}/, table)
+      else
+        table = Hash[TABLE_FOR_ESCAPE_HTML__.map {|pair|pair.map {|s|s.encode(enc)}}]
+        string = string.gsub(/#{"['&\"<>]".encode(enc)}/, table)
+      end
       string.encode!(origenc) if origenc
       string
     else
       string = string.b
-      string.gsub!(/['&\"<>]/, TABLE_FOR_ESCAPE_HTML__)
+      if escape_table
+        string.gsub!(p Regexp.union(escape_table.keys), escape_table)
+      else
+        string.gsub!(/['&\"<>]/, TABLE_FOR_ESCAPE_HTML__)
+      end
       string.force_encoding(enc)
     end
   end
