@@ -9,6 +9,8 @@ jobs:
       min_version: 2.5
   test:
     needs: ruby-versions
+    env:
+      JRUBY_OPTS: '--debug'
     name: build (${{ matrix.ruby }} / ${{ matrix.os }})
     strategy:
       fail-fast: false
