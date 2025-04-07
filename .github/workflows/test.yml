@@ -30,6 +30,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
+    - name: remove default java except 21
+      if: ${{ matrix.ruby == 'jruby-head' || matrix.ruby == 'truffleruby' || matrix.ruby == 'truffleruby-head' }}
+      run: sudo apt remove temurin-8-jdk temurin-11-jdk temurin-17-jdk
+    - name: set up java 21
+      if: ${{ matrix.ruby == 'jruby-head' || matrix.ruby == 'truffleruby' || matrix.ruby == 'truffleruby-head' }}
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: 21
+        cache: 'maven'
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
