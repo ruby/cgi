@@ -39,7 +39,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: 21
-        cache: 'maven'
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
