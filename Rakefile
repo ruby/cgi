@@ -3,8 +3,7 @@ require "rake/testtask"
 
 require 'rake/javaextensiontask'
 Rake::JavaExtensionTask.new("escape") do |ext|
-  ext.source_version = '1.8'
-  ext.target_version = '1.8'
+  ext.release = '8'
   ext.ext_dir = 'ext/java'
   ext.lib_dir = 'lib/cgi'
 
