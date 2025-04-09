@@ -32,21 +32,19 @@ Or install it yourself as:
 
 ### Get form values
 
+Given a form with the content `field_name=123`:
+
 ```ruby
 require "cgi"
 cgi = CGI.new
-value = cgi['field_name']   # <== value string for 'field_name'
-  # if not 'field_name' included, then return "".
-fields = cgi.keys            # <== array of field names
+value = cgi['field_name'] # => "123"
+cgi['flowerpot'] # => ""
+fields = cgi.keys # => [ "field_name" ]
 
-# returns true if form has 'field_name'
-cgi.has_key?('field_name')
-cgi.has_key?('field_name')
-cgi.include?('field_name')
+cgi.has_key?('field_name') # => true
+cgi.include?('field_name') # => true
+cgi.include?('flowerpot') # => false
 ```
-
-CAUTION! cgi['field_name'] returned an Array with the old
-cgi.rb(included in Ruby 1.6)
 
 ### Get form values as hash
 
