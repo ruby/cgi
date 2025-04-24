@@ -168,4 +168,23 @@ class CGISessionTest < Test::Unit::TestCase
     assert_equal(value2,session["key2"])
     session.close
   end
+
+  def test_cgi_session_filestore_digest
+    session_id = "banana"
+    path_default = session_file_store_path("tmpdir"=>@session_dir, "session_id"=>session_id)
+    assert_equal path_default, session_file_store_path("tmpdir"=>@session_dir, "session_id"=>session_id)
+    path_sha512 = session_file_store_path("tmpdir"=>@session_dir, "session_id"=>session_id, "digest"=>"SHA512")
+    assert_not_equal path_sha512, path_default
+  end
+
+  private
+
+  def session_file_store_path(options)
+    cgi = Object.new
+    session = CGI::Session.new(cgi, options)
+    session.delete
+    dbman = session.instance_variable_get(:@dbman)
+    assert_kind_of(CGI::Session::FileStore, dbman)
+    dbman.instance_variable_get(:@path)
+  end
 end
