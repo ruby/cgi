@@ -135,6 +135,19 @@ class CGIUtilTest < Test::Unit::TestCase
     assert_equal("&#39;&amp;&quot;&gt;&lt;", CGI.escapeHTML("'&\"><"))
   end
 
+  def test_dynamic_cgi_escapeHTML
+    assert_equal("'&\">&lt;", CGI.escapeHTML("'&\"><", { "<" => "&lt;" }))
+    assert_equal("'\\u0026\"\\u003e\\u003c", CGI.escapeHTML("'&\"><", {
+      ">" => '\u003e',
+      "<" => '\u003c',
+      "&" => '\u0026',
+    }))
+
+    assert_raise(ArgumentError) { CGI.escapeHTML("   ", { "12" => "&lt;" }) }
+    assert_raise(ArgumentError) { CGI.escapeHTML("   ", { "€" => "&lt;" }) }
+    assert_raise(ArgumentError) { CGI.escapeHTML("   ", { "" => "&lt;" }) }
+  end
+
   def test_cgi_escape_html_duplicated
     orig = "Ruby".dup.force_encoding("US-ASCII")
     str = CGI.escapeHTML(orig)
@@ -214,6 +227,17 @@ class CGIUtilTest < Test::Unit::TestCase
       end
       define_method("test_cgi_unescapeHTML:#{enc.name}") do
         assert_equal(unescaped, CGI.unescapeHTML(escaped))
+      end
+
+      define_method("test_cgi_dynamic_unescapeHTML:#{enc.name}") do
+        table = {
+          "'" => '&#39;',
+          '&' => '&amp;',
+          '"' => '&quot;',
+          '<' => '&lt;',
+          '>' => '&gt;',
+        }
+        assert_equal(escaped, CGI.escapeHTML(unescaped, table))
       end
     end
   end
