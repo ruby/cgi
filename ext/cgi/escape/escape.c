@@ -474,14 +474,14 @@ InitVM_escape(void)
     rb_cCGI    = rb_define_class("CGI", rb_cObject);
     rb_mEscape = rb_define_module_under(rb_cCGI, "Escape");
     rb_mUtil   = rb_define_module_under(rb_cCGI, "Util");
-    rb_define_method(rb_mEscape, "escapeHTML", cgiesc_escape_html, 1);
-    rb_define_method(rb_mEscape, "unescapeHTML", cgiesc_unescape_html, 1);
-    rb_define_method(rb_mEscape, "escapeURIComponent", cgiesc_escape_uri_component, 1);
+    rb_define_method(rb_mEscape, "escapeHTML", (VALUE (*)(ANYARGS))cgiesc_escape_html, 1);
+    rb_define_method(rb_mEscape, "unescapeHTML", (VALUE (*)(ANYARGS))cgiesc_unescape_html, 1);
+    rb_define_method(rb_mEscape, "escapeURIComponent", (VALUE (*)(ANYARGS))cgiesc_escape_uri_component, 1);
     rb_define_alias(rb_mEscape, "escape_uri_component", "escapeURIComponent");
-    rb_define_method(rb_mEscape, "unescapeURIComponent", cgiesc_unescape_uri_component, -1);
+    rb_define_method(rb_mEscape, "unescapeURIComponent", (VALUE (*)(ANYARGS))cgiesc_unescape_uri_component, -1);
     rb_define_alias(rb_mEscape, "unescape_uri_component", "unescapeURIComponent");
-    rb_define_method(rb_mEscape, "escape", cgiesc_escape, 1);
-    rb_define_method(rb_mEscape, "unescape", cgiesc_unescape, -1);
+    rb_define_method(rb_mEscape, "escape", (VALUE (*)(ANYARGS))cgiesc_escape, 1);
+    rb_define_method(rb_mEscape, "unescape", (VALUE (*)(ANYARGS))cgiesc_unescape, -1);
     rb_prepend_module(rb_mUtil, rb_mEscape);
     rb_extend_object(rb_cCGI, rb_mEscape);
 }
