@@ -294,5 +294,5 @@ end
 require 'cgi/core'
 require 'cgi/cookie'
 require 'cgi/util'
-require 'cgi/escape'
+require 'cgi/escape' unless defined?(CGI::EscapeExt)
 CGI.autoload(:HtmlExtension, 'cgi/html')
