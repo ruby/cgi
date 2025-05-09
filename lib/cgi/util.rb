@@ -42,3 +42,6 @@ module CGI::Util
     lines.gsub(/^((?:#{Regexp::quote(shift)})*)__(?=<\/?\w)/, '\1')
   end
 end
+
+# For backward compatibility
+require 'cgi/escape' unless defined?(CGI::EscapeExt)
