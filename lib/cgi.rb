@@ -291,8 +291,8 @@ class CGI
   VERSION = "0.5.0.beta1"
 end
 
-require 'cgi/core'
-require 'cgi/cookie'
 require 'cgi/util'
 require 'cgi/escape' unless defined?(CGI::EscapeExt)
+require 'cgi/core'
+require 'cgi/cookie'
 CGI.autoload(:HtmlExtension, 'cgi/html')
