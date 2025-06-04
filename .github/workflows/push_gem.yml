@@ -23,7 +23,7 @@ jobs:
 
     strategy:
       matrix:
-        ruby: ["3.3", "jruby"]
+        ruby: ["ruby", "jruby"]
 
     steps:
       - name: Harden Runner
@@ -59,4 +59,4 @@ jobs:
           gh release create "${tag_name}" --verify-tag --generate-notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: matrix.ruby != 'jruby'
+        if: matrix.ruby == 'ruby'
