@@ -144,7 +144,8 @@
 #
 # === Utility HTML escape and other methods like a function.
 #
-# There are some utility tool defined in cgi/util.rb .
+# There are some utility tools defined in cgi/util.rb and cgi/escape.rb.
+# Escape and unescape methods are defined in cgi/escape.rb.
 # And when include, you can use utility methods like a function.
 #
 # == Examples of use
@@ -274,14 +275,14 @@
 #
 # === Some utility methods
 #
-#   require 'cgi/util'
+#   require 'cgi/escape'
 #   CGI.escapeHTML('Usage: foo "bar" <baz>')
 #
 #
 # === Some utility methods like a function
 #
-#   require 'cgi/util'
-#   include CGI::Util
+#   require 'cgi/escape'
+#   include CGI::Escape
 #   escapeHTML('Usage: foo "bar" <baz>')
 #   h('Usage: foo "bar" <baz>') # alias
 #
