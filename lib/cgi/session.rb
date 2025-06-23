@@ -206,13 +206,15 @@ class CGI
     #          on Unix systems).
     # prefix:: the prefix to add to the session id when generating
     #          the filename for this session's FileStore file.
-    #          Defaults to "cgi_sid_".
+    #          Defaults to the empty string.
     # suffix:: the prefix to add to the session id when generating
     #          the filename for this session's FileStore file.
     #          Defaults to the empty string.
     # digest:: the digest algorithm to hash the session id when
     #          generating the filename for this session's FileStore
     #          file.  Defaults to "SHA256".
+    # length:: the length of the session id part of the filestore,
+    #          excluding +prefix+ and +suffix+ parts.  Defaults to 16.
     def new_store_file(option={}) # :nodoc:
       dir = option['tmpdir'] || Dir::tmpdir
       prefix = option['prefix']
@@ -222,7 +224,7 @@ class CGI
         require 'digest'
         algorithm = Digest(algorithm)
       end
-      digest = algorithm.hexdigest(session_id)[0,16]
+      digest = algorithm.hexdigest(session_id)[0, option['length'] || 16]
       path = dir+"/"
       path << prefix if prefix
       path << digest
