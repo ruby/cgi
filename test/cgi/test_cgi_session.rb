@@ -169,11 +169,13 @@ class CGISessionTest < Test::Unit::TestCase
     session.close
   end
 
-  def test_cgi_session_filestore_digest
+  def test_cgi_session_filestore_path
     session_id = "banana"
     path_default = session_file_store_path("tmpdir"=>@session_dir, "session_id"=>session_id)
+    assert_session_filestore_path(path_default)
     assert_equal path_default, session_file_store_path("tmpdir"=>@session_dir, "session_id"=>session_id)
     path_sha512 = session_file_store_path("tmpdir"=>@session_dir, "session_id"=>session_id, "digest"=>"SHA512")
+    assert_session_filestore_path(path_default)
     assert_not_equal path_sha512, path_default
 
     path = session_file_store_path("tmpdir"=>@session_dir, "session_id"=>session_id, "digest"=>Digest::SHA256)
@@ -183,6 +185,14 @@ class CGISessionTest < Test::Unit::TestCase
   end
 
   private
+
+  def assert_session_filestore_path(path, dir: @session_dir, prefix: "cgi_sid_", suffix: nil)
+    base = File.basename(path)
+    assert_equal dir, File.dirname(path)
+    assert_operator base, :start_with?, prefix if prefix
+    assert_operator base, :end_with?, suffix if suffix
+    path
+  end
 
   def session_file_store_path(options)
     cgi = Object.new
