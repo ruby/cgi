@@ -177,6 +177,9 @@ class CGISessionTest < Test::Unit::TestCase
     path_sha512 = session_file_store_path("tmpdir"=>@session_dir, "session_id"=>session_id, "digest"=>"SHA512")
     assert_session_filestore_path(path_default)
     assert_not_equal path_sha512, path_default
+    path_long = session_file_store_path("tmpdir"=>@session_dir, "session_id"=>session_id, "length"=>32)
+    assert_equal path_default.length+16, path_long.length
+    assert_send [path_long, :start_with?, path_default]
 
     path = session_file_store_path("tmpdir"=>@session_dir, "session_id"=>session_id, "digest"=>Digest::SHA256)
     assert_equal path_default, path
