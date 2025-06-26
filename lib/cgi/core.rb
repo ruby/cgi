@@ -392,7 +392,7 @@ class CGI
   #
   def self.parse(query)
     params = {}
-    query.split(/[&;]/).each do |pairs|
+    query.split(/[&;]/) do |pairs|
       key, value = pairs.split('=',2).collect{|v| CGI.unescape(v) }
 
       next unless key
