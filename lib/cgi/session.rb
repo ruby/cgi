@@ -214,11 +214,11 @@ class CGI
       dir = option['tmpdir'] || Dir::tmpdir
       prefix = option['prefix']
       suffix = option['suffix']
-      require 'digest/md5'
-      md5 = Digest::MD5.hexdigest(session_id)[0,16]
+      require 'digest'
+      sha256 = Digest::SHA256.hexdigest(session_id)[0,16]
       path = dir+"/"
       path << prefix if prefix
-      path << md5
+      path << sha256
       path << suffix if suffix
       if File::exist? path
         hash = nil
