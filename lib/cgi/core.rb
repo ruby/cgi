@@ -755,12 +755,38 @@ class CGI
   #
   @@accept_charset="UTF-8" if false # needed for rdoc?
 
-  # Return the accept character set for all new CGI instances.
+  # :call-seq:
+  #   CGI.accept_charset -> encoding_or_encoding_name
+  #
+  # Returns the accept character set for any new \CGI instance;
+  # see CGI.accept_charset=.
   def self.accept_charset
     @@accept_charset
   end
 
-  # Set the accept character set for all new CGI instances.
+  # :call-seq:
+  #   CGI.accept_charset = encoding_or_encoding_name
+  #
+  # Sets the accept character set for any new \CGI instance;
+  # returns the argument.
+  #
+  # Argument +encoding_or_encoding_name+ may be
+  # an {Encoding object}[https://docs.ruby-lang.org/en/master/encodings_rdoc.html#label-Encoding+Objects]
+  # or an {encoding name}[https://docs.ruby-lang.org/en/master/encodings_rdoc.html#label-Names+and+Aliases]:
+  #
+  #   require 'cgi'
+  #   CGI.accept_charset # => "UTF-8"
+  #   CGI.accept_charset = Encoding::UTF_8
+  #   CGI.accept_charset # => #<Encoding:UTF-8>
+  #   CGI.accept_charset = 'UTF-8'
+  #   CGI.accept_charset # => "UTF-8"
+  #
+  # Note that the argument is stored "as is,"
+  # and is not checked for validity:
+  #
+  #   CGI.accept_charset = Object.new
+  #   CGI.accept_charset # => #<Object:0x000002b0eb7250d0>
+  #
   def self.accept_charset=(accept_charset)
     @@accept_charset=accept_charset
   end
