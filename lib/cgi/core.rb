@@ -778,75 +778,134 @@ class CGI
   #
   @@max_multipart_length= 128 * 1024 * 1024
 
-  # Create a new CGI instance.
-  #
   # :call-seq:
-  #   CGI.new(tag_maker) { block }
-  #   CGI.new(options_hash = {}) { block }
+  #   CGI.new(options = {}) -> new_cgi
+  #   CGI.new(tag_maker) -> new_cgi
+  #   CGI.new(options = {}) {|name, value| ... } -> new_cgi
+  #   CGI.new(tag_maker) {|name, value| ... } -> new_cgi
+  #
+  # Returns a new \CGI object.
+  #
+  # The behavior of this method depends _strongly_ on whether it is called
+  # within a standard \CGI call environment;
+  # that is, whether <tt>ENV['REQUEST_HEADER']</tt> is defined.
+  #
+  # <b>Within a Standard Call Environment</b>
+  #
+  # This section assumes that <tt>ENV['REQUEST_HEADER']</tt> is defined;
+  # for example:
+  #
+  #   ENV['REQUEST_METHOD'] # => "GET"
+  #
+  # With no argument and no block given, returns a new \CGI object with default values:
+  #
+  #   cgi = CGI.new
+  #   puts cgi.pretty_inspect
+  #   #<CGI:0x000002b0ea237bc8
+  #   @accept_charset="UTF-8",
+  #   @accept_charset_error_block=nil,
+  #   @cookies={},
+  #   @max_multipart_length=134217728,
+  #   @multipart=false,
+  #   @output_cookies=nil,
+  #   @output_hidden=nil,
+  #   @params={}>
+  #
+  # With hash argument +options+ given and no block given,
+  # returns a new \CGI object with the given options.
+  #
+  # The options may be:
+  #
+  # - <tt>accept_charset: _encoding_</tt>:
+  #   specifies the encoding of the received query string.
+  #
+  #   Value  _encoding_ may be
+  #   an {Encoding object}[https://docs.ruby-lang.org/en/master/encodings_rdoc.html#label-Encoding+Objects]
+  #   or an {encoding name}[https://docs.ruby-lang.org/en/master/encodings_rdoc.html#label-Names+and+Aliases]:
+  #
+  #     CGI.new(accept_charset: 'EUC-JP')
+  #
+  #   If the option is not given,
+  #   the default value is the value of method #accept_charset.
+  #
+  # - <tt>max_multipart_length: _size_</tt>:
+  #   specifies maximum size (in bytes) of multipart data.
+  #
+  #   The _size_ may be:
+  #
+  #   - A positive integer.
+  #
+  #       CGI.new(max_multipart_length: 1024 * 1024)
   #
   #
-  # <tt>tag_maker</tt>::
-  #   This is the same as using the +options_hash+ form with the value <tt>{
-  #   :tag_maker => tag_maker }</tt> Note that it is recommended to use the
-  #   +options_hash+ form, since it also allows you specify the charset you
-  #   will accept.
-  # <tt>options_hash</tt>::
-  #   A Hash that recognizes three options:
+  #   - A lambda to be evaluated when the request is parsed.
+  #     This is useful when determining whether to accept multipart data
+  #     (e.g. by consulting a registered user's upload allowance).
   #
-  #   <tt>:accept_charset</tt>::
-  #     specifies encoding of received query string.  If omitted,
-  #     <tt>@@accept_charset</tt> is used.  If the encoding is not valid, a
-  #     CGI::InvalidEncoding will be raised.
+  #       CGI.new(max_multipart_length: -> {check_filesystem})
   #
-  #     Example. Suppose <tt>@@accept_charset</tt> is "UTF-8"
+  #   If the option is not given, the default is +134217728+, specifying a maximum size of 128 megabytes.
   #
-  #     when not specified:
+  # - <tt>tag_maker: _html_version_</tt>:
+  #   specifies which version of HTML to use in generating tags.
   #
-  #         cgi=CGI.new      # @accept_charset # => "UTF-8"
+  #   Value _html_version_ may be one of:
   #
-  #     when specified as "EUC-JP":
+  #   - <tt>'html3'</tt>: {HTML version 3}[https://en.wikipedia.org/wiki/HTML#HTML_3].
+  #   - <tt>'html4'</tt>: {HTML version 4}[https://en.wikipedia.org/wiki/HTML#HTML_4].
+  #   - <tt>'html4Tr'</tt>: HTML 4.0 Transitional.
+  #   - <tt>'html4Fr'</tt>: HTML 4.0 with Framesets.
+  #   - <tt>'html5'</tt>: {HTML version 5}[https://en.wikipedia.org/wiki/HTML#HTML_5].
   #
-  #         cgi=CGI.new(:accept_charset => "EUC-JP") # => "EUC-JP"
+  #   Example:
   #
-  #   <tt>:tag_maker</tt>::
-  #     String that specifies which version of the HTML generation methods to
-  #     use.  If not specified, no HTML generation methods will be loaded.
+  #     CGI.new(tag_maker: 'html5')
   #
-  #     The following values are supported:
+  #   If the option is not given,
+  #   no HTML generation methods are loaded.
   #
-  #     "html3":: HTML 3.x
-  #     "html4":: HTML 4.0
-  #     "html4Tr":: HTML 4.0 Transitional
-  #     "html4Fr":: HTML 4.0 with Framesets
-  #     "html5":: HTML 5
+  # With string argument +tag_maker+ given as _tag_maker_ and no block given,
+  # equivalent to <tt>CGI.new(tag_maker: _tag_maker_)</tt>:
   #
-  #   <tt>:max_multipart_length</tt>::
-  #     Specifies maximum length of multipart data. Can be an Integer scalar or
-  #     a lambda, that will be evaluated when the request is parsed. This
-  #     allows more complex logic to be set when determining whether to accept
-  #     multipart data (e.g. consult a registered users upload allowance)
+  #   CGI.new('html5')
   #
-  #     Default is 128 * 1024 * 1024 bytes
+  # <b>Outside a Standard Call Environment</b>
   #
-  #         cgi=CGI.new(:max_multipart_length => 268435456) # simple scalar
+  # This section assumes that <tt>ENV['REQUEST_HEADER']</tt> is not defined;
+  # for example:
   #
-  #         cgi=CGI.new(:max_multipart_length => -> {check_filesystem}) # lambda
+  #   ENV['REQUEST_METHOD'] # => nil
   #
-  # <tt>block</tt>::
-  #   If provided, the block is called when an invalid encoding is
-  #   encountered. For example:
+  # In this mode, the method reads its parameters
+  # from the command line or (failing that) from standard input;
+  # returns a new \CGI object.
   #
-  #     encoding_errors={}
-  #     cgi=CGI.new(:accept_charset=>"EUC-JP") do |name,value|
-  #       encoding_errors[name] = value
-  #     end
+  # Otherwise, cookies and other parameters are parsed automatically from the standard CGI locations,
+  # which vary according to the request method.
   #
-  # Finally, if the CGI object is not created in a standard CGI call
-  # environment (that is, it can't locate REQUEST_METHOD in its environment),
-  # then it will run in "offline" mode.  In this mode, it reads its parameters
-  # from the command line or (failing that) from standard input.  Otherwise,
-  # cookies and other parameters are parsed automatically from the standard
-  # CGI locations, which varies according to the REQUEST_METHOD.
+  # <b>Block</b>
+  #
+  # If a block is given, its code is stored as a Proc;
+  # whenever CGI::InvalidEncoding would be raised, the proc is called instead.
+  #
+  # In this example, the proc simply saves the error:
+  #
+  #   encoding_errors={}
+  #   CGI.new(accept_charset: 'EUC-JP') do |name,value|
+  #     encoding_errors[name] = value
+  #   end
+  #   # =>
+  #   #<CGI:0x000002b0ec11bcd8
+  #    @accept_charset="EUC-JP",
+  #    @accept_charset_error_block=#<Proc:0x000002b0ed2ee190 (irb):146>,
+  #    @cookies={},
+  #    @max_multipart_length=134217728,
+  #    @multipart=false,
+  #    @options={accept_charset: "EUC-JP", max_multipart_length: 134217728},
+  #    @output_cookies=nil,
+  #    @output_hidden=nil,
+  #    @params={}>
+  #
   def initialize(options = {}, &block) # :yields: name, value
     @accept_charset_error_block = block_given? ? block : nil
     @options={
