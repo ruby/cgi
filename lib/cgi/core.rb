@@ -802,7 +802,7 @@ class CGI
   #   cgi = CGI.new
   #   puts cgi.pretty_inspect
   #   #<CGI:0x000002b0ea237bc8
-  #   @accept_charset="UTF-8",
+  #   @accept_charset=#<Encoding:UTF-8>,
   #   @accept_charset_error_block=nil,
   #   @cookies={},
   #   @max_multipart_length=134217728,
@@ -826,7 +826,11 @@ class CGI
   #     CGI.new(accept_charset: 'EUC-JP')
   #
   #   If the option is not given,
-  #   the default value is the value of method #accept_charset.
+  #   the default value is the class default encoding.
+  #
+  #   <em>Note:</em> The <tt>accept_charset</tt> method returns the HTTP Accept-Charset
+  #   header value, not the configured encoding. The configured encoding is used
+  #   internally for query string parsing.
   #
   # - <tt>max_multipart_length: _size_</tt>:
   #   specifies maximum size (in bytes) of multipart data.
@@ -845,6 +849,9 @@ class CGI
   #       CGI.new(max_multipart_length: -> {check_filesystem})
   #
   #   If the option is not given, the default is +134217728+, specifying a maximum size of 128 megabytes.
+#
+#   <em>Note:</em> This option configures internal behavior only.
+#   There is no public method to retrieve this value after initialization.
   #
   # - <tt>tag_maker: _html_version_</tt>:
   #   specifies which version of HTML to use in generating tags.
@@ -882,6 +889,17 @@ class CGI
   #
   # Otherwise, cookies and other parameters are parsed automatically from the standard CGI locations,
   # which vary according to the request method.
+  #
+  # <b>Options vs Public Methods</b>
+  #
+  # Some initialization options configure internal behavior only and do not provide
+  # corresponding public getter methods:
+  #
+  # - <tt>accept_charset</tt>: Configures internal encoding for parsing.
+  #   The <tt>accept_charset</tt> method returns the HTTP Accept-Charset header.
+  # - <tt>max_multipart_length</tt>: Configures internal multipart size limits.
+  #   No public getter method is available.
+  # - <tt>tag_maker</tt>: Loads HTML generation methods (publicly accessible).
   #
   # <b>Block</b>
   #
