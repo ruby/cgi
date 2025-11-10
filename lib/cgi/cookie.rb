@@ -40,9 +40,11 @@ class CGI
   class Cookie < Array
     @@accept_charset="UTF-8" unless defined?(@@accept_charset)
 
+    # :stopdoc:
     TOKEN_RE = %r"\A[[!-~]&&[^()<>@,;:\\\"/?=\[\]{}]]+\z"
     PATH_VALUE_RE = %r"\A[[ -~]&&[^;]]*\z"
     DOMAIN_VALUE_RE = %r"\A\.?(?<label>(?!-)[-A-Za-z0-9]+(?<!-))(?:\.\g<label>)*\z"
+    # :startdoc:
 
     # Create a new CGI::Cookie object.
     #

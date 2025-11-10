@@ -1006,27 +1006,32 @@ class CGI
 
   end # Html5
 
+  # HTML version 3 generation class.
   class HTML3
     include Html3
     include HtmlExtension
   end
 
+  # HTML version 4 generation class.
   class HTML4
     include Html4
     include HtmlExtension
   end
 
+  # HTML version 4 transitional generation class.
   class HTML4Tr
     include Html4Tr
     include HtmlExtension
   end
 
+  # HTML version 4 with framesets generation class.
   class HTML4Fr
     include Html4Tr
     include Html4Fr
     include HtmlExtension
   end
 
+  # HTML version 5 generation class.
   class HTML5
     include Html5
     include HtmlExtension

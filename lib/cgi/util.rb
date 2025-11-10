@@ -5,6 +5,7 @@ class CGI
   extend Util
 end
 
+# Utility methods for CGI.
 module CGI::Util
   # Format a +Time+ object as a String using the format specified by RFC 1123.
   #
