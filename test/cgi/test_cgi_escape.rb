@@ -63,7 +63,7 @@ class CGIEscapeTest < Test::Unit::TestCase
     return unless defined?(::Encoding)
 
     assert_raise(TypeError) {CGI.unescape('', nil)}
-    assert_separately(%w[-rcgi/escape], "#{<<-"begin;"}\n#{<<-"end;"}")
+    assert_separately(%w[-W0 -rcgi/escape], "#{<<-"begin;"}\n#{<<-"end;"}")
     begin;
       assert_equal("", CGI.unescape(''))
     end;
@@ -120,7 +120,7 @@ class CGIEscapeTest < Test::Unit::TestCase
     return unless defined?(::Encoding)
 
     assert_raise(TypeError) {CGI.unescapeURIComponent('', nil)}
-    assert_separately(%w[-rcgi/escape], "#{<<-"begin;"}\n#{<<-"end;"}")
+    assert_separately(%w[-W0 -rcgi/escape], "#{<<-"begin;"}\n#{<<-"end;"}")
     begin;
       assert_equal("", CGI.unescapeURIComponent(''))
     end;
