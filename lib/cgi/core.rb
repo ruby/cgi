@@ -629,8 +629,8 @@ class CGI
       string = unless ARGV.empty?
         ARGV.join(' ')
       else
-        if STDIN.tty?
-          STDERR.print(
+        if stdinput.tty?
+          $stderr.print(
             %|(offline mode: enter name=value pairs on standard input)\n|
           )
         end

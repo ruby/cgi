@@ -339,7 +339,7 @@ public class CGIEscape implements Library {
 
         int buf = 0;
         Ruby runtime = context.runtime;
-        
+
         for (i = 0; i < len; ++i) {
             int c = cstrBytes[cstr + i] & 0xFF;
             int clen = 0;
