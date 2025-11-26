@@ -55,8 +55,8 @@ class CGISessionTest < Test::Unit::TestCase
     assert_equal(value1,session["key1"])
     assert_equal(value2,session["key2"])
     session.close
-
   end
+
   def test_cgi_session_pstore
     update_env(
       'REQUEST_METHOD'  => 'GET',
@@ -92,6 +92,7 @@ class CGISessionTest < Test::Unit::TestCase
     assert_equal(value2,session["key2"])
     session.close
   end if defined?(::PStore)
+
   def test_cgi_session_specify_session_id
     update_env(
       'REQUEST_METHOD'  => 'GET',
@@ -130,6 +131,7 @@ class CGISessionTest < Test::Unit::TestCase
     assert_equal("foo",session.session_id)
     session.close
   end
+
   def test_cgi_session_specify_session_key
     update_env(
       'REQUEST_METHOD'  => 'GET',
