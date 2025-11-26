@@ -42,6 +42,17 @@
 #
 # Read on for more details.  Examples are provided at the bottom.
 #
+# == About the Examples
+#
+# Examples on this page assume that \CGI has been required:
+#
+#   require 'cgi'
+#
+# Unless otherwise stated, examples also assume that environment variable 'REQUEST_METHOD' exists
+# (which prevents CGI.new from entering its online mode):
+#
+#   ENV.include?('REQUEST_METHOD') # => true
+#
 # == Queries
 #
 # The CGI class dynamically mixes in parameter and cookie-parsing
@@ -148,59 +159,62 @@
 # Escape and unescape methods are defined in cgi/escape.rb.
 # And when include, you can use utility methods like a function.
 #
-# == Examples of use
+# == Examples of Use
 #
-# === Get form values
+# === Form Values
 #
-#   require "cgi"
+# ==== Get Form Values
+#
+# You can use method +cgi.params+ to retrieve form values
+# in a {Hash}[https://docs.ruby-lang.org/en/3.4/Hash.html]:
+#
+#   ENV.update(
+#    'REQUEST_METHOD' => 'GET',
+#    'QUERY_STRING'   => 'a=111&&b=222&c&d='
+#   )
 #   cgi = CGI.new
-#   value = cgi['field_name']   # <== value string for 'field_name'
-#     # if not 'field_name' included, then return "".
-#   fields = cgi.keys            # <== array of field names
+#   cgi.params.class # => Hash
+#   cgi.params       # => {"a" => ["111"], "b" => ["222"], "c" => [], "d" => [""]}
+#   cgi.params.keys  # => ["a", "b", "c", "d"]
+#   cgi.params['a']  # => ["111"]  # Returns an array.
+#   cgi.params['d']  # => [""]     # Returns empty string in array if no value.
+#   cgi.params['x']  # => []       # Returns empty array if no key.
 #
-#   # returns true if form has 'field_name'
-#   cgi.has_key?('field_name')
-#   cgi.has_key?('field_name')
-#   cgi.include?('field_name')
+# A \CGI instance has these convenience methods:
 #
-# CAUTION! <code>cgi['field_name']</code> returned an Array with the old
-# cgi.rb(included in Ruby 1.6)
+#   # Convenience method for cgi.params.keys.
+#   cgi.keys          # => ["a", "b", "c", "d"]
+#   # Convenience method for cgi.params[key].first.
+#   cgi['a']          # => "111"  # Returns string, not array.
+#   cgi['d']          # => ""     # Returns empty string if no value.
+#   cgi['x']          # => ""     # Returns empty string if no key.
+#   # Convenience method for cgi.params.include?.
+#   cgi.include?('a') # => true
+#   cgi.include?('x') # => false
 #
-# === Get form values as hash
+# ==== Save and Restore Form Values
 #
-#   require "cgi"
+# This example uses {Pstore}[https://docs.ruby-lang.org/en/3.4/PStore.html]
+# to store and retrieve form values:
+#
+#   ENV.update(
+#    'REQUEST_METHOD' => 'GET',
+#    'QUERY_STRING'   => 'a=111&&b=222&c&d='
+#   )
 #   cgi = CGI.new
-#   params = cgi.params
-#
-# cgi.params is a hash.
-#
-#   cgi.params['new_field_name'] = ["value"]  # add new param
-#   cgi.params['field_name'] = ["new_value"]  # change value
-#   cgi.params.delete('field_name')           # delete param
-#   cgi.params.clear                          # delete all params
-#
-#
-# === Save form values to file
-#
-#   require "pstore"
-#   db = PStore.new("query.db")
-#   db.transaction do
-#     db["params"] = cgi.params
+#   require 'pstore'
+#   store = PStore.new('params.store')
+#   store.transaction do
+#     store['params'] = cgi.params
 #   end
-#
-#
-# === Restore form values from file
-#
-#   require "pstore"
-#   db = PStore.new("query.db")
-#   db.transaction do
-#     cgi.params = db["params"]
+#   cgi.params.clear # Oops! Lost my params!
+#   store.transaction do
+#     cgi.params = store['params']
 #   end
+#   cgi.params # => {"a" => ["111"], "b" => ["222"], "c" => [], "d" => [""]}
 #
+# ==== Get multipart form values
 #
-# === Get multipart form values
-#
-#   require "cgi"
 #   cgi = CGI.new
 #   value = cgi['field_name']   # <== value string for 'field_name'
 #   value.read                  # <== body of value
@@ -212,7 +226,6 @@
 #
 # === Get cookie values
 #
-#   require "cgi"
 #   cgi = CGI.new
 #   values = cgi.cookies['name']  # <== array of 'name'
 #     # if not 'name' included, then return [].
@@ -222,7 +235,6 @@
 #
 # === Get cookie objects
 #
-#   require "cgi"
 #   cgi = CGI.new
 #   for name, cookie in cgi.cookies
 #     cookie.expires = Time.now + 30
@@ -231,14 +243,12 @@
 #
 #   cgi.cookies # { "name1" => cookie1, "name2" => cookie2, ... }
 #
-#   require "cgi"
 #   cgi = CGI.new
 #   cgi.cookies['name'].expires = Time.now + 30
 #   cgi.out("cookie" => cgi.cookies['name']) {"string"}
 #
 # === Print http header and html string to $DEFAULT_OUTPUT ($>)
 #
-#   require "cgi"
 #   cgi = CGI.new("html4")  # add HTML generation methods
 #   cgi.out do
 #     cgi.html do
