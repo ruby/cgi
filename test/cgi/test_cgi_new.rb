@@ -57,7 +57,7 @@ class CGINewTest < Test::Unit::TestCase
       'html4Fr' => '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">',
       'html5' => '<!DOCTYPE HTML>'
     }
-    
+
     html_versions.each do |version, expected_doctype|
       cgi = CGI.new(tag_maker: version)
       assert_respond_to(cgi, :doctype, "HTML generation methods should be loaded for #{version}")
@@ -80,11 +80,11 @@ class CGINewTest < Test::Unit::TestCase
 
     cgi1 = CGI.new('html5')
     cgi2 = CGI.new(tag_maker: 'html5')
-    
+
     # Both should have HTML generation methods loaded
     assert_respond_to(cgi1, :doctype)
     assert_respond_to(cgi2, :doctype)
-    
+
     # Both should produce the same doctype
     assert_equal(cgi1.doctype, cgi2.doctype)
     assert_equal('<!DOCTYPE HTML>', cgi1.doctype)
@@ -96,13 +96,13 @@ class CGINewTest < Test::Unit::TestCase
     ENV.delete('QUERY_STRING')
     ENV.delete('SERVER_SOFTWARE')
     ENV.delete('SERVER_PROTOCOL')
-    
+
     # Create test input
     test_input = "name=value&test=123"
     $stdin = StringIO.new(test_input)
-    
+
     cgi = CGI.new
-    
+
     # In offline mode, it should read from stdin
     assert_equal("value", cgi['name'])
     assert_equal("123", cgi['test'])
@@ -145,7 +145,7 @@ class CGINewTest < Test::Unit::TestCase
     )
 
     cgi = CGI.new
-    
+
     # Test documented instance variables and methods exist
     assert_kind_of(Hash, cgi.cookies)
     assert_kind_of(Hash, cgi.params)
@@ -182,7 +182,7 @@ class CGINewTest < Test::Unit::TestCase
       'REQUEST_METHOD' => 'POST',
       'CONTENT_TYPE' => 'application/x-www-form-urlencoded',
       'CONTENT_LENGTH' => test_input.length.to_s,
-      'SERVER_SOFTWARE' => 'Apache 2.2.0',  
+      'SERVER_SOFTWARE' => 'Apache 2.2.0',
       'SERVER_PROTOCOL' => 'HTTP/1.1',
     )
 
@@ -208,7 +208,7 @@ class CGINewTest < Test::Unit::TestCase
 
     # Class default should be UTF-8
     assert_equal(Encoding::UTF_8, CGI.accept_charset)
-    
+
     # Instance with no option should use class default internally
     cgi = CGI.new
     assert_equal(Encoding::UTF_8, cgi.instance_variable_get(:@accept_charset))
@@ -257,7 +257,7 @@ class CGINewTest < Test::Unit::TestCase
     assert_equal('EUC-JP', cgi1.instance_variable_get(:@accept_charset))
     assert_equal(512 * 1024, cgi2.instance_variable_get(:@max_multipart_length))
     assert_respond_to(cgi3, :doctype)
-    
+
     assert_equal('ISO-8859-1', cgi4.instance_variable_get(:@accept_charset))
     assert_equal(256 * 1024, cgi4.instance_variable_get(:@max_multipart_length))
     assert_respond_to(cgi4, :doctype)
