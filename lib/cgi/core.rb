@@ -384,11 +384,14 @@ class CGI
     stdoutput.print(*options)
   end
 
-  # Parse an HTTP query string into a hash of key=>value pairs.
+  # :call-seq:
+  #    CGI.parse(query_string) -> hash
   #
-  #   params = CGI.parse("query_string")
-  #     # {"name1" => ["value1", "value2", ...],
-  #     #  "name2" => ["value1", "value2", ...], ... }
+  # Returns a new hash built from name/value pairs in the given +query_string+:
+  #
+  #   query = 'foo=0&bar=1&foo=2&bar=3'
+  #   CGI.parse(query)
+  #   # => {"foo" => ["0", "2"], "bar" => ["1", "3"]}
   #
   def self.parse(query)
     params = {}
