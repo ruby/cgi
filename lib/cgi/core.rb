@@ -788,11 +788,11 @@ class CGI
   #
   # The behavior of this method depends _strongly_ on whether it is called
   # within a standard \CGI call environment;
-  # that is, whether <tt>ENV['REQUEST_HEADER']</tt> is defined.
+  # that is, whether <tt>ENV['REQUEST_METHOD']</tt> is defined.
   #
   # <b>Within a Standard Call Environment</b>
   #
-  # This section assumes that <tt>ENV['REQUEST_HEADER']</tt> is defined;
+  # This section assumes that <tt>ENV['REQUEST_METHOD']</tt> is defined;
   # for example:
   #
   #   ENV['REQUEST_METHOD'] # => "GET"
@@ -878,7 +878,7 @@ class CGI
   #
   # <b>Outside a Standard Call Environment</b>
   #
-  # This section assumes that <tt>ENV['REQUEST_HEADER']</tt> is not defined;
+  # This section assumes that <tt>ENV['REQUEST_METHOD']</tt> is not defined;
   # for example:
   #
   #   ENV['REQUEST_METHOD'] # => nil
