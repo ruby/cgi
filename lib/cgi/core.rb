@@ -803,16 +803,18 @@ class CGI
   # With no argument and no block given, returns a new \CGI object with default values:
   #
   #   cgi = CGI.new
-  #   puts cgi.pretty_inspect
-  #   #<CGI:0x000002b0ea237bc8
-  #   @accept_charset=#<Encoding:UTF-8>,
-  #   @accept_charset_error_block=nil,
-  #   @cookies={},
-  #   @max_multipart_length=134217728,
-  #   @multipart=false,
-  #   @output_cookies=nil,
-  #   @output_hidden=nil,
-  #   @params={}>
+  #   cgi
+  #   # =>
+  #   #<CGI:0x00000189917aff00
+  #    @accept_charset="UTF-8",
+  #    @accept_charset_error_block=nil,
+  #    @cookies={},
+  #    @max_multipart_length=134217728,
+  #    @multipart=false,
+  #    @options={accept_charset: "UTF-8", max_multipart_length: 134217728},
+  #    @output_cookies=nil,
+  #    @output_hidden=nil,
+  #    @params={}>
   #
   # With hash argument +options+ given and no block given,
   # returns a new \CGI object with the given options.
@@ -852,27 +854,50 @@ class CGI
   #       CGI.new(max_multipart_length: -> {check_filesystem})
   #
   #   If the option is not given, the default is +134217728+, specifying a maximum size of 128 megabytes.
-#
-#   <em>Note:</em> This option configures internal behavior only.
-#   There is no public method to retrieve this value after initialization.
+  #
+  #   <em>Note:</em> This option configures internal behavior only.
+  #   There is no public method to retrieve this value after initialization.
   #
   # - <tt>tag_maker: _html_version_</tt>:
-  #   specifies which version of HTML to use in generating tags.
+  #   specifies a version of HTML;
+  #   this determines which tag-generating instance methods
+  #   (such as +html+, +head+, +body+, etc.) are to be loaded.
   #
   #   Value _html_version_ may be one of:
   #
-  #   - <tt>'html3'</tt>: {HTML version 3}[https://en.wikipedia.org/wiki/HTML#HTML_3].
-  #   - <tt>'html4'</tt>: {HTML version 4}[https://en.wikipedia.org/wiki/HTML#HTML_4].
-  #   - <tt>'html4Tr'</tt>: HTML 4.0 Transitional.
-  #   - <tt>'html4Fr'</tt>: HTML 4.0 with Framesets.
-  #   - <tt>'html5'</tt>: {HTML version 5}[https://en.wikipedia.org/wiki/HTML#HTML_5].
+  #   - <tt>'html3'</tt>: {HTML version 3}[https://www.w3.org/MarkUp/html3/Contents.html].
+  #   - <tt>'html4'</tt>: {HTML version 4}[https://www.w3.org/TR/html4].
+  #   - <tt>'html4Tr'</tt>: {HTML 4.0 Transitional}[https://www.w3.org/TR/html4/sgml/loosedtd.html].
+  #   - <tt>'html4Fr'</tt>: {HTML 4.0 with Framesets}[https://www.w3.org/TR/html4/present/frames.html].
+  #   - <tt>'html5'</tt>: {HTML version 5}[https://html.spec.whatwg.org/multipage].
   #
   #   Example:
   #
   #     CGI.new(tag_maker: 'html5')
   #
-  #   If the option is not given,
-  #   no HTML generation methods are loaded.
+  #   If the option is not given (or if an invalid value is given),
+  #   no tag-generating methods are loaded.
+  #
+  #   Examples:
+  #
+  #     CGI.new.respond_to?(:html)                       # => false  # Tag-generating methods not loaded.
+  #     CGI.new(tag_maker: 'html3').respond_to?(:html)   # => true   # Tag-generating methods loaded.
+  #     # Tag 'button' is new in HTML 4.
+  #     CGI.new(tag_maker: 'html3').respond_to?(:button) # => false
+  #     CGI.new(tag_maker: 'html4').respond_to?(:button) # => true
+  #     # Tag 'canvas' is new in HTML 5.
+  #     CGI.new(tag_maker: 'html4').respond_to?(:canvas) # => false
+  #     CGI.new(tag_maker: 'html5').respond_to?(:canvas) # => true
+  #     # Value is case-sensitive.
+  #     CGI.new(tag_maker: 'HTML4').respond_to?(:html)   # => false
+  #
+  #   You can determine exactly which methods have been loaded;
+  #   this example captures the methods loaded by <tt>'html4'</tt>:
+  #
+  #     methods_loaded = CGI.new('html4').methods - CGI.new.methods
+  #     methods_loaded.size # => 98
+  #     methods_loaded.sort.take(10)
+  #     # => [:a, :abbr, :acronym, :address, :area, :b, :base, :bdo, :big, :blockquote]
   #
   # With string argument +tag_maker+ given as _tag_maker_ and no block given,
   # equivalent to <tt>CGI.new(tag_maker: _tag_maker_)</tt>:
@@ -889,6 +914,28 @@ class CGI
   # In this mode, the method reads its parameters
   # from the command line or (failing that) from standard input;
   # returns a new \CGI object.
+  #
+  # Parameters from command line:
+  #
+  #   $ cat t.rb
+  #   require 'cgi'
+  #   cgi = CGI.new
+  #   p cgi.params
+  #   ruby t.rb foo=0 bar=1 foo=2 bar=3
+  #   {"foo" => ["0", "2"], "bar" => ["1", "3"]}
+  #
+  # Parameters from standard input:
+  #
+  #   cgi = CGI.new
+  #   (offline mode: enter name=value pairs on standard input)
+  #   foo=0
+  #   bar=1
+  #   ^D
+  #   cgi.params
+  #   # => {"foo" => ["0"], "bar" => ["1"]}
+  #
+  # The end-of-file character is Ctrl-D on a Unix-like system (as above),
+  # or Ctrl-Z on Windows.
   #
   # Otherwise, cookies and other parameters are parsed automatically from the standard CGI locations,
   # which vary according to the request method.
@@ -911,7 +958,7 @@ class CGI
   #
   # In this example, the proc simply saves the error:
   #
-  #   encoding_errors={}
+  #   encoding_errors = {}
   #   CGI.new(accept_charset: 'EUC-JP') do |name,value|
   #     encoding_errors[name] = value
   #   end
