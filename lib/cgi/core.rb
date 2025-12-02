@@ -925,17 +925,11 @@ class CGI
   #
   @@accept_charset="UTF-8" if false # needed for rdoc?
 
-  # :call-seq:
-  #   CGI.accept_charset -> encoding
-  #
   # Return the accept character set for all new CGI instances.
   def self.accept_charset
     @@accept_charset
   end
 
-  # :call-seq:
-  #    CGI.accept_charset = encoding
-  #
   # Set the accept character set for all new CGI instances.
   def self.accept_charset=(accept_charset)
     @@accept_charset=accept_charset
