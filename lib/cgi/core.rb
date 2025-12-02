@@ -81,7 +81,8 @@ class CGI
   # The string always includes:
   #
   # - Header +Content-Type+ (with a default value if none given).
-  # - A trailing newline, which delimits the header block.
+  # - A trailing newline, which delimits the header block;
+  #   that last line is omitted from the examples below.
   #
   # <b>In Brief</b>
   #
@@ -98,6 +99,7 @@ class CGI
   #     'type' => 'text/xml',
   #     MyHeader: true
   #   }
+  #
   #   puts cgi.http_header(headers)
   #   HTTP/1.0 200 OK
   #   Date: Mon, 01 Dec 2025 22:08:22 GMT
@@ -111,6 +113,7 @@ class CGI
   #   MyHeader: true
   #
   #   headers.delete('nph')
+  #
   #   puts cgi.http_header(headers)
   #   Status: 200 OK
   #   Server: Apache/2.4.1 (Unix)
@@ -127,20 +130,20 @@ class CGI
   # With no argument given,
   # includes only header +Content-Type+ with its default value <tt>'text/html'</tt>:
   #
-  #   cgi.http_header
-  #   # => "Content-Type: text/html\r\n\r\n"
+  #   puts cgi.http_header
+  #   Content-Type: text/html
   #
   # With string argument +content_type+ given,
   # includes header +Content-Type+ with its default value <tt>'text/html'</tt>:
   #
-  #   cgi.http_header('text/xml')
-  #   # => "Content-Type: text/xml\r\n\r\n"
+  #   puts cgi.http_header('text/xml')
+  #   Content-Type: text/xml
   #
   # With hash argument +headers+ given,
   # includes a header for hash entry, whose name is based on the entry's key,
   # and whose value is the entry's value.
   #
-  # <b>Recognized Keys</b>
+  # <i>Recognized Keys</i>
   #
   # The following keys are recognized;
   # each is a lowercase string:
@@ -148,14 +151,15 @@ class CGI
   # <tt>'charset'</tt>::
   #   The character set of the body; appended to the +Content-Type+ header:
   #
-  #     cgi.http_header('charset' => 'iso-2022-jp')
-  #     # => "Content-Type: text/html; charset=iso-2022-jp\r\n\r\n"
+  #     puts cgi.http_header('charset' => 'iso-2022-jp')
+  #     Content-Type: text/html; charset=iso-2022-jp
   #
   # <tt>'connection'</tt>::
   #   Sets header +Connection+ to the given string:
   #
-  #     cgi.http_header('connection' => 'keep-alive')
-  #     # => "Connection: keep-alive\r\nContent-Type: text/html\r\n\r\n"
+  #     puts cgi.http_header('connection' => 'keep-alive')
+  #     Connection: keep-alive
+  #     Content-Type: text/html
   #
   # <tt>'cookie'</tt>::
   #   Sets one or more +Set-Cookie+ headers to the given value, which may be:
@@ -172,14 +176,24 @@ class CGI
   #     bar_string = 'bar=1'
   #     foo_cookie = CGI::Cookie.new('foo', '0')
   #     bar_cookie = CGI::Cookie.new('bar', '1')
-  #     cgi.http_header('cookie' => foo_string)
-  #     # => "Content-Type: text/html\r\nSet-Cookie: foo=0\r\n\r\n"
-  #     cgi.http_header('cookie' => foo_cookie)
-  #     # => "Content-Type: text/html\r\nSet-Cookie: foo=0; path=\r\n\r\n"
-  #     cgi.http_header('cookie' => [foo_cookie, bar_string])
-  #     # => "Content-Type: text/html\r\nSet-Cookie: foo=0; path=\r\nSet-Cookie: bar=1\r\n\r\n"
-  #     cgi.http_header('cookie' => {foo: foo_cookie, bar: bar_string})
-  #     # => "Content-Type: text/html\r\nSet-Cookie: foo=0; path=\r\nSet-Cookie: bar=1\r\n\r\n"
+  #
+  #     puts cgi.http_header('cookie' => foo_string)
+  #     Content-Type: text/html
+  #     Set-Cookie: foo=0
+  #
+  #     puts cgi.http_header('cookie' => foo_cookie)
+  #     Content-Type: text/html
+  #     Set-Cookie: foo=0; path=
+  #
+  #     puts cgi.http_header('cookie' => [foo_cookie, bar_string])
+  #     Content-Type: text/html
+  #     Set-Cookie: foo=0; path=
+  #     Set-Cookie: bar=1
+  #
+  #     puts cgi.http_header('cookie' => {foo: foo_cookie, bar: bar_string})
+  #     Content-Type: text/html
+  #     Set-Cookie: foo=0; path=
+  #     Set-Cookie: bar=1
   #
   #   These cookies are in addition to the cookies held
   #   in the <tt>@output_cookies</tt> variable.
@@ -188,23 +202,28 @@ class CGI
   #   Sets header +Expires+ to the given time,
   #   which must be a {Time}[https://docs.ruby-lang.org/en/master/Time.html] object:
   #
-  #     cgi.http_header('expires' => Time.now + (60 * 60 * 24 * 365))
-  #     # => "Content-Type: text/html\r\nExpires: Tue, 01 Dec 2026 20:47:43 GMT\r\n\r\n"
+  #     puts cgi.http_header('expires' => Time.now + (60 * 60 * 24 * 365))
+  #     Content-Type: text/html
+  #     Expires: Tue, 01 Dec 2026 23:42:37 GMT
   #
   # <tt>'language'</tt>::
   #   Sets header +Content-Language+ to the given string:
   #
-  #     cgi.http_header('language' => 'en-US, en-CA')
-  #     # => "Content-Type: text/html\r\nContent-Language: en-US, en-CA\r\n\r\n"
+  #     puts cgi.http_header('language' => 'en-US, en-CA')
+  #     Content-Type: text/html
+  #     Content-Language: en-US, en-CA
   #
   # <tt>'length'</tt>::
   #   Sets header +Content-Length+ the given value,
   #   which may be an integer or a string:
   #
-  #     cgi.http_header('length' =>  4096)
-  #     # => "Content-Type: text/html\r\nContent-Length: 4096\r\n\r\n"
-  #     cgi.http_header('length' =>  '4096')
-  #     # => "Content-Type: text/html\r\nContent-Length: 4096\r\n\r\n"
+  #     puts cgi.http_header('length' =>  4096)
+  #     Content-Type: text/html
+  #     Content-Length: 4096
+  #
+  #     puts cgi.http_header('length' =>  '4096')
+  #     Content-Type: text/html
+  #     Content-Length: 4096
   #
   # <tt>'nph'</tt>::
   #   If +true+:
@@ -234,14 +253,16 @@ class CGI
   # <tt>'server'</tt>::
   #   Sets header +Server+ to the given string:
   #
-  #     cgi.http_header('server' => 'Apache/2.4.1 (Unix)')
-  #     # => "Server: Apache/2.4.1 (Unix)\r\nContent-Type: text/html\r\n\r\n"
+  #     puts cgi.http_header('server' => 'Apache/2.4.1 (Unix)')
+  #     Server: Apache/2.4.1 (Unix)
+  #     Content-Type: text/html
   #
   # <tt>'status'</tt>::
   #   Sets header +Status+ to the given string:
   #
-  #     cgi.http_header('status' => '666 MyVeryOwnStatus')
-  #     # => "Status: 666 MyVeryOwnStatus\r\nContent-Type: text/html\r\n\r\n"
+  #     puts cgi.http_header('status' => '666 MyVeryOwnStatus')
+  #     Status: 666 MyVeryOwnStatus
+  #     Content-Type: text/html
   #
   #   If the given string is a key in the hash constant +CGI::HTTP_STATUS+,
   #   the status becomes the value for that key:
@@ -267,28 +288,36 @@ class CGI
   #      "BAD_GATEWAY" => "502 Bad Gateway",
   #      "VARIANT_ALSO_VARIES" => "506 Variant Also Negotiates"}
   #
-  #      cgi.http_header('status' => 'OK')
-  #      # => "Status: 200 OK\r\nContent-Type: text/html\r\n\r\n"
-  #      cgi.http_header('status' => 'NOT_FOUND')
-  #      # => "Status: 404 Not Found\r\nContent-Type: text/html\r\n\r\n"
+  #     puts cgi.http_header('status' => 'OK')
+  #     Status: 200 OK
+  #     Content-Type: text/html
+  #
+  #     puts cgi.http_header('status' => 'NOT_FOUND')
+  #     Status: 404 Not Found
+  #     Content-Type: text/html
   #
   # <tt>'type'</tt>::
   #   Sets +Content-Type+, overriding the default value <tt>'text/html'</tt>:
   #
-  #     cgi.http_header('type' => 'text/xml')
-  #     # => "Content-Type: text/xml\r\n\r\n"
+  #     puts cgi.http_header('type' => 'text/xml')
+  #     Content-Type: text/xml
   #
-  # <b>Unrecognized Keys</b>
+  # <i>Unrecognized Keys</i>
   #
   # Headers may also be set for unrecognized keys;
   # an unrecognized key becomes a header name with the given value:
   #
-  #   cgi.http_header('length' => 0)  # Recognized key (lowercase string).
-  #   # => "Content-Type: text/html\r\nContent-Length: 0\r\n\r\n"
-  #   cgi.http_header('Length' => 0)  # Unrecognized key (string key not lowercase).
-  #   # => "Content-Type: text/html\r\nLength: 0\r\n\r\n"
-  #   cgi.http_header(length: 0)      # Unrecognized key (symbol key not string)
-  #   # => "Content-Type: text/html\r\nlength: 0\r\n\r\n"
+  #   puts cgi.http_header('length' => 0)  # Recognized key (lowercase string).
+  #   Content-Type: text/html
+  #   Content-Length: 0
+  #
+  #   puts cgi.http_header('Length' => 0)  # Unrecognized key (string key not lowercase).
+  #   Content-Type: text/html
+  #   Length: 0
+  #
+  #   puts cgi.http_header(length: 0)      # Unrecognized key (symbol key not string)
+  #   Content-Type: text/html
+  #   length: 0
   #
   # This method does not perform charset conversion.
   #
@@ -299,8 +328,10 @@ class CGI
   # calling method +header+ generates an HTML +header+ element:
   #
   #   cgi = CGI.new(tag_maker: 'html5')
-  #   cgi.http_header # => "Content-Type: text/html\r\n\r\n"  # As expected.
-  #   cgi.header      # => "<HEADER></HEADER>"                # Maybe a surprise.
+  #   puts cgi.http_header  # Works as expected.
+  #   Content-Type: text/html
+  #   puts cgi.header       # Maybe a surprise.
+  #   <HEADER></HEADER>
   #
   def http_header(options='text/html')
     if options.is_a?(String)
