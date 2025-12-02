@@ -928,8 +928,7 @@ class CGI
   # :call-seq:
   #   CGI.accept_charset -> encoding
   #
-  # Returns the default accept character set to be used for new \CGI instances;
-  # see CGI.accept_charset=.
+  # Return the accept character set for all new CGI instances.
   def self.accept_charset
     @@accept_charset
   end
@@ -937,63 +936,7 @@ class CGI
   # :call-seq:
   #    CGI.accept_charset = encoding
   #
-  # Sets the default accept character set to be used for new \CGI instances;
-  # returns the argument.
-  #
-  # The argument may be an Encoding object or an Encoding name;
-  # see {Encodings}[https://docs.ruby-lang.org/en/master/language/encodings_rdoc.html]:
-  #
-  #   # The initial value.
-  #   CGI.accept_charset # => "UTF-8"
-  #   CGI.new
-  #   # =>
-  #   #<CGI:0x0000018991db6ae8
-  #    @accept_charset="UTF-8",
-  #    @accept_charset_error_block=nil,
-  #    @cookies={},
-  #    @max_multipart_length=134217728,
-  #    @multipart=false,
-  #    @options={accept_charset: "UTF-8", max_multipart_length: 134217728},
-  #    @output_cookies=nil,
-  #    @output_hidden=nil,
-  #    @params={}>
-  #
-  #   # Set by Encoding name.
-  #   CGI.accept_charset = 'US-ASCII' # => "US-ASCII"
-  #   CGI.new
-  #   # =>
-  #   #<CGI:0x0000018991cf4100
-  #    @accept_charset="US-ASCII",
-  #    @accept_charset_error_block=nil,
-  #    @cookies={},
-  #    @max_multipart_length=134217728,
-  #    @multipart=false,
-  #    @options={accept_charset: "US-ASCII", max_multipart_length: 134217728},
-  #    @output_cookies=nil,
-  #    @output_hidden=nil,
-  #    @params={}>
-  #
-  #   # Set by Encoding object.
-  #   CGI.accept_charset = Encoding::ASCII_8BIT # => #<Encoding:BINARY (ASCII-8BIT)>
-  #   CGI.new
-  #   # =>
-  #   #<CGI:0x0000018991cfc800
-  #    @accept_charset=#<Encoding:BINARY (ASCII-8BIT)>,
-  #    @accept_charset_error_block=nil,
-  #    @cookies={},
-  #    @max_multipart_length=134217728,
-  #    @multipart=false,
-  #    @options={accept_charset: #<Encoding:BINARY (ASCII-8BIT)>, max_multipart_length: 134217728},
-  #    @output_cookies=nil,
-  #    @output_hidden=nil,
-  #    @params={}>
-  #
-  # The given encoding is not checked in this method,
-  # but if it is invalid, a call to CGI.new will fail:
-  #
-  #   CGI.accept_charset = 'foo'
-  #   CGI.new  # Raises ArgumentError: unknown encoding name - foo
-  #
+  # Set the accept character set for all new CGI instances.
   def self.accept_charset=(accept_charset)
     @@accept_charset=accept_charset
   end
