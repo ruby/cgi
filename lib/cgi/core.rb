@@ -72,91 +72,267 @@ class CGI
 
   private :env_table, :stdinput, :stdoutput
 
-  # Create an HTTP header block as a string.
-  #
   # :call-seq:
-  #   http_header(content_type_string="text/html")
-  #   http_header(headers_hash)
+  #    http_header(content_type = 'text/html') -> string
+  #    http_header(headers) -> string
   #
-  # Includes the empty line that ends the header block.
+  # Creates and returns an HTTP header section as a multi-line string.
   #
-  # +content_type_string+::
-  #   If this form is used, this string is the <tt>Content-Type</tt>
-  # +headers_hash+::
-  #   A Hash of header values. The following header keys are recognized:
+  # The string always includes:
   #
-  #   type:: The Content-Type header.  Defaults to "text/html"
-  #   charset:: The charset of the body, appended to the Content-Type header.
-  #   nph:: A boolean value.  If true, prepend protocol string and status
-  #         code, and date; and sets default values for "server" and
-  #         "connection" if not explicitly set.
-  #   status::
-  #     The HTTP status code as a String, returned as the Status header.  The
-  #     values are:
+  # - Header +Content-Type+ (with a default value if none given).
+  # - A trailing newline, which delimits the header block;
+  #   that last line is omitted from the examples below.
   #
-  #     OK:: 200 OK
-  #     PARTIAL_CONTENT:: 206 Partial Content
-  #     MULTIPLE_CHOICES:: 300 Multiple Choices
-  #     MOVED:: 301 Moved Permanently
-  #     REDIRECT:: 302 Found
-  #     NOT_MODIFIED:: 304 Not Modified
-  #     BAD_REQUEST:: 400 Bad Request
-  #     AUTH_REQUIRED:: 401 Authorization Required
-  #     FORBIDDEN:: 403 Forbidden
-  #     NOT_FOUND:: 404 Not Found
-  #     METHOD_NOT_ALLOWED:: 405 Method Not Allowed
-  #     NOT_ACCEPTABLE:: 406 Not Acceptable
-  #     LENGTH_REQUIRED:: 411 Length Required
-  #     PRECONDITION_FAILED:: 412 Precondition Failed
-  #     SERVER_ERROR:: 500 Internal Server Error
-  #     NOT_IMPLEMENTED:: 501 Method Not Implemented
-  #     BAD_GATEWAY:: 502 Bad Gateway
-  #     VARIANT_ALSO_VARIES:: 506 Variant Also Negotiates
+  # <b>In Brief</b>
   #
-  #   server:: The server software, returned as the Server header.
-  #   connection:: The connection type, returned as the Connection header (for
-  #                instance, "close".
-  #   length:: The length of the content that will be sent, returned as the
-  #            Content-Length header.
-  #   language:: The language of the content, returned as the Content-Language
-  #              header.
-  #   expires:: The time on which the current content expires, as a +Time+
-  #             object, returned as the Expires header.
-  #   cookie::
-  #     A cookie or cookies, returned as one or more Set-Cookie headers.  The
-  #     value can be the literal string of the cookie; a CGI::Cookie object;
-  #     an Array of literal cookie strings or Cookie objects; or a hash all of
-  #     whose values are literal cookie strings or Cookie objects.
+  #   headers = {
+  #     'charset' => 'iso-2022-jp',
+  #     'connection' => 'keep-alive',
+  #     'cookie' => 'foo=0',
+  #     'expires' => Time.now + (60 * 60 * 24 * 365),
+  #     'language' => 'en-US, en-CA',
+  #     'length' =>  4096,
+  #     'nph' => true,
+  #     'server' => 'Apache/2.4.1 (Unix)',
+  #     'status' => 'OK',
+  #     'type' => 'text/xml',
+  #     MyHeader: true
+  #   }
   #
-  #     These cookies are in addition to the cookies held in the
-  #     @output_cookies field.
+  #   puts cgi.http_header(headers)
+  #   HTTP/1.0 200 OK
+  #   Date: Mon, 01 Dec 2025 22:08:22 GMT
+  #   Server: Apache/2.4.1 (Unix)
+  #   Connection: keep-alive
+  #   Content-Type: text/xml; charset=iso-2022-jp
+  #   Content-Length: 4096
+  #   Content-Language: en-US, en-CA
+  #   Expires: Tue, 01 Dec 2026 22:05:30 GMT
+  #   Set-Cookie: foo=0
+  #   MyHeader: true
   #
-  #   Other headers can also be set; they are appended as key: value.
+  #   headers.delete('nph')
   #
-  # Examples:
+  #   puts cgi.http_header(headers)
+  #   Status: 200 OK
+  #   Server: Apache/2.4.1 (Unix)
+  #   Connection: keep-alive
+  #   Content-Type: text/xml; charset=iso-2022-jp
+  #   Content-Length: 4096
+  #   Content-Language: en-US, en-CA
+  #   Expires: Tue, 01 Dec 2026 22:05:30 GMT
+  #   Set-Cookie: foo=0
+  #   MyHeader: true
   #
-  #   http_header
-  #     # Content-Type: text/html
+  # <b>Arguments</b>
   #
-  #   http_header("text/plain")
-  #     # Content-Type: text/plain
+  # With no argument given,
+  # includes only header +Content-Type+ with its default value <tt>'text/html'</tt>:
   #
-  #   http_header("nph"        => true,
-  #               "status"     => "OK",  # == "200 OK"
-  #                 # "status"     => "200 GOOD",
-  #               "server"     => ENV['SERVER_SOFTWARE'],
-  #               "connection" => "close",
-  #               "type"       => "text/html",
-  #               "charset"    => "iso-2022-jp",
-  #                 # Content-Type: text/html; charset=iso-2022-jp
-  #               "length"     => 103,
-  #               "language"   => "ja",
-  #               "expires"    => Time.now + 30,
-  #               "cookie"     => [cookie1, cookie2],
-  #               "my_header1" => "my_value",
-  #               "my_header2" => "my_value")
+  #   puts cgi.http_header
+  #   Content-Type: text/html
+  #
+  # With string argument +content_type+ given,
+  # includes header +Content-Type+ with its default value <tt>'text/html'</tt>:
+  #
+  #   puts cgi.http_header('text/xml')
+  #   Content-Type: text/xml
+  #
+  # With hash argument +headers+ given,
+  # includes a header for hash entry, whose name is based on the entry's key,
+  # and whose value is the entry's value.
+  #
+  # <i>Recognized Keys</i>
+  #
+  # The following keys are recognized;
+  # each is a lowercase string:
+  #
+  # <tt>'charset'</tt>::
+  #   The character set of the body; appended to the +Content-Type+ header:
+  #
+  #     puts cgi.http_header('charset' => 'iso-2022-jp')
+  #     Content-Type: text/html; charset=iso-2022-jp
+  #
+  # <tt>'connection'</tt>::
+  #   Sets header +Connection+ to the given string:
+  #
+  #     puts cgi.http_header('connection' => 'keep-alive')
+  #     Connection: keep-alive
+  #     Content-Type: text/html
+  #
+  # <tt>'cookie'</tt>::
+  #   Sets one or more +Set-Cookie+ headers to the given value, which may be:
+  #
+  #   - String cookie.
+  #   - CGI::Cookie object.
+  #   - Array of string cookies and CGI::Cookie objects.
+  #   - A hash whose values are string cookies and CGI::Cookie objects
+  #     (the keys are not used).
+  #
+  #   Examples:
+  #
+  #     foo_string = 'foo=0'
+  #     bar_string = 'bar=1'
+  #     foo_cookie = CGI::Cookie.new('foo', '0')
+  #     bar_cookie = CGI::Cookie.new('bar', '1')
+  #
+  #     puts cgi.http_header('cookie' => foo_string)
+  #     Content-Type: text/html
+  #     Set-Cookie: foo=0
+  #
+  #     puts cgi.http_header('cookie' => foo_cookie)
+  #     Content-Type: text/html
+  #     Set-Cookie: foo=0; path=
+  #
+  #     puts cgi.http_header('cookie' => [foo_cookie, bar_string])
+  #     Content-Type: text/html
+  #     Set-Cookie: foo=0; path=
+  #     Set-Cookie: bar=1
+  #
+  #     puts cgi.http_header('cookie' => {foo: foo_cookie, bar: bar_string})
+  #     Content-Type: text/html
+  #     Set-Cookie: foo=0; path=
+  #     Set-Cookie: bar=1
+  #
+  #   These cookies are in addition to the cookies held
+  #   in the <tt>@output_cookies</tt> variable.
+  #
+  # <tt>'expires'</tt>::
+  #   Sets header +Expires+ to the given time,
+  #   which must be a {Time}[https://docs.ruby-lang.org/en/master/Time.html] object:
+  #
+  #     puts cgi.http_header('expires' => Time.now + (60 * 60 * 24 * 365))
+  #     Content-Type: text/html
+  #     Expires: Tue, 01 Dec 2026 23:42:37 GMT
+  #
+  # <tt>'language'</tt>::
+  #   Sets header +Content-Language+ to the given string:
+  #
+  #     puts cgi.http_header('language' => 'en-US, en-CA')
+  #     Content-Type: text/html
+  #     Content-Language: en-US, en-CA
+  #
+  # <tt>'length'</tt>::
+  #   Sets header +Content-Length+ the given value,
+  #   which may be an integer or a string:
+  #
+  #     puts cgi.http_header('length' =>  4096)
+  #     Content-Type: text/html
+  #     Content-Length: 4096
+  #
+  #     puts cgi.http_header('length' =>  '4096')
+  #     Content-Type: text/html
+  #     Content-Length: 4096
+  #
+  # <tt>'nph'</tt>::
+  #   If +true+:
+  #
+  #   - Adds protocol string and status code as first line,
+  #   - Adds date as second line.
+  #   - Adds headers +Server+ with no value,
+  #     and +Connection+ with default value <tt>'close'</tt>;
+  #     either or both values may be overridden with explicit values.
+  #
+  #   Examples:
+  #
+  #     puts cgi.http_header('nph' => true)
+  #     HTTP/1.0 200 OK
+  #     Date: Mon, 01 Dec 2025 19:42:22 GMT
+  #     Server:
+  #     Connection: close
+  #     Content-Type: text/html
+  #
+  #     puts cgi.http_header('nph' => true, 'server' => 'Apache/2.4.1 (Unix)', 'connection' => 'keep-alive')
+  #     HTTP/1.0 200 OK
+  #     Date: Mon, 01 Dec 2025 20:00:41 GMT
+  #     Server: Apache/2.4.1 (Unix)
+  #     Connection: keep-alive
+  #     Content-Type: text/html
+  #
+  # <tt>'server'</tt>::
+  #   Sets header +Server+ to the given string:
+  #
+  #     puts cgi.http_header('server' => 'Apache/2.4.1 (Unix)')
+  #     Server: Apache/2.4.1 (Unix)
+  #     Content-Type: text/html
+  #
+  # <tt>'status'</tt>::
+  #   Sets header +Status+ to the given string:
+  #
+  #     puts cgi.http_header('status' => '666 MyVeryOwnStatus')
+  #     Status: 666 MyVeryOwnStatus
+  #     Content-Type: text/html
+  #
+  #   If the given string is a key in the hash constant +CGI::HTTP_STATUS+,
+  #   the status becomes the value for that key:
+  #
+  #     CGI::HTTP_STATUS
+  #     # =>
+  #     {"OK" => "200 OK",
+  #      "PARTIAL_CONTENT" => "206 Partial Content",
+  #      "MULTIPLE_CHOICES" => "300 Multiple Choices",
+  #      "MOVED" => "301 Moved Permanently",
+  #      "REDIRECT" => "302 Found",
+  #      "NOT_MODIFIED" => "304 Not Modified",
+  #      "BAD_REQUEST" => "400 Bad Request",
+  #      "AUTH_REQUIRED" => "401 Authorization Required",
+  #      "FORBIDDEN" => "403 Forbidden",
+  #      "NOT_FOUND" => "404 Not Found",
+  #      "METHOD_NOT_ALLOWED" => "405 Method Not Allowed",
+  #      "NOT_ACCEPTABLE" => "406 Not Acceptable",
+  #      "LENGTH_REQUIRED" => "411 Length Required",
+  #      "PRECONDITION_FAILED" => "412 Precondition Failed",
+  #      "SERVER_ERROR" => "500 Internal Server Error",
+  #      "NOT_IMPLEMENTED" => "501 Method Not Implemented",
+  #      "BAD_GATEWAY" => "502 Bad Gateway",
+  #      "VARIANT_ALSO_VARIES" => "506 Variant Also Negotiates"}
+  #
+  #     puts cgi.http_header('status' => 'OK')
+  #     Status: 200 OK
+  #     Content-Type: text/html
+  #
+  #     puts cgi.http_header('status' => 'NOT_FOUND')
+  #     Status: 404 Not Found
+  #     Content-Type: text/html
+  #
+  # <tt>'type'</tt>::
+  #   Sets +Content-Type+, overriding the default value <tt>'text/html'</tt>:
+  #
+  #     puts cgi.http_header('type' => 'text/xml')
+  #     Content-Type: text/xml
+  #
+  # <i>Unrecognized Keys</i>
+  #
+  # Headers may also be set for unrecognized keys;
+  # an unrecognized key becomes a header name with the given value:
+  #
+  #   puts cgi.http_header('length' => 0)  # Recognized key (lowercase string).
+  #   Content-Type: text/html
+  #   Content-Length: 0
+  #
+  #   puts cgi.http_header('Length' => 0)  # Unrecognized key (string key not lowercase).
+  #   Content-Type: text/html
+  #   Length: 0
+  #
+  #   puts cgi.http_header(length: 0)      # Unrecognized key (symbol key not string)
+  #   Content-Type: text/html
+  #   length: 0
   #
   # This method does not perform charset conversion.
+  #
+  # It's best to use this method (CGI#http_header), not its aliased method +header+,
+  # which is provided only for backward compatibility.
+  #
+  # Method CGI#http_header is preferred because when +tag_maker+ is <tt>'html5'</tt>,
+  # calling method +header+ generates an HTML +header+ element:
+  #
+  #   cgi = CGI.new(tag_maker: 'html5')
+  #   puts cgi.http_header  # Works as expected.
+  #   Content-Type: text/html
+  #   puts cgi.header       # Maybe a surprise.
+  #   <HEADER></HEADER>
+  #
   def http_header(options='text/html')
     if options.is_a?(String)
       content_type = options
