@@ -363,7 +363,8 @@ class CGI
   #
   # Using #header with the HTML5 tag maker will create a <header> element.
   alias :header :http_header
-  def _no_crlf_check(str)
+
+    def _no_crlf_check(str)
     if str
       str = str.to_s
       raise "A HTTP status or header field must not include CR and LF" if str =~ /[\r\n]/
