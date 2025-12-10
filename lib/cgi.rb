@@ -26,7 +26,7 @@
 # The file CGI::Session provides session management functionality; see that
 # class for more details.
 #
-# See http://www.w3.org/CGI/ for more information on the CGI protocol.
+# See https://www.w3.org/CGI/ for more information on the CGI protocol.
 #
 # == Introduction
 #

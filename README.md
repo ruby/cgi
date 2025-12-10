@@ -22,11 +22,15 @@ gem 'cgi'
 
 And then execute:
 
-    $ bundle
+```bash
+bundle
+```
 
 Or install it yourself as:
 
-    $ gem install cgi
+```bash
+gem install cgi
+```
 
 ## Usage
 
@@ -72,7 +76,6 @@ db.transaction do
   db["params"] = cgi.params
 end
 ```
-
 
 ### Restore form values from file
 
