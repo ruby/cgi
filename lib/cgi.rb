@@ -300,7 +300,7 @@
 
 class CGI
   # The version string
-  VERSION = "0.5.0"
+  VERSION = "0.5.1"
 end
 
 require 'cgi/util'
