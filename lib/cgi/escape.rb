@@ -75,6 +75,7 @@ module CGI::Escape
     '"' => '&quot;',
     '<' => '&lt;',
     '>' => '&gt;',
+    ':' => '&colon;',
   }
 
   # Escape special characters in HTML, namely '&\"<>
@@ -89,12 +90,12 @@ module CGI::Escape
         string = enc ? string.encode(enc) : string.b
       end
       table = Hash[TABLE_FOR_ESCAPE_HTML__.map {|pair|pair.map {|s|s.encode(enc)}}]
-      string = string.gsub(/#{"['&\"<>]".encode(enc)}/, table)
+      string = string.gsub(/#{"['&\"<>:]".encode(enc)}/, table)
       string.encode!(origenc) if origenc
       string
     else
       string = string.b
-      string.gsub!(/['&\"<>]/, TABLE_FOR_ESCAPE_HTML__)
+      string.gsub!(/['&\"<>:]/, TABLE_FOR_ESCAPE_HTML__)
       string.force_encoding(enc)
     end
   end
@@ -110,13 +111,14 @@ module CGI::Escape
         enc = Encoding::Converter.asciicompat_encoding(enc)
         string = enc ? string.encode(enc) : string.b
       end
-      string = string.gsub(Regexp.new('&(apos|amp|quot|gt|lt|#[0-9]+|#x[0-9A-Fa-f]+);'.encode(enc))) do
+      string = string.gsub(Regexp.new('&(apos|amp|quot|gt|lt|colon|#[0-9]+|#x[0-9A-Fa-f]+);'.encode(enc))) do
         case $1.encode(Encoding::US_ASCII)
         when 'apos'                then "'".encode(enc)
         when 'amp'                 then '&'.encode(enc)
         when 'quot'                then '"'.encode(enc)
         when 'gt'                  then '>'.encode(enc)
         when 'lt'                  then '<'.encode(enc)
+        when 'colon'               then ':'.encode(enc)
         when /\A#0*(\d+)\z/        then $1.to_i.chr(enc)
         when /\A#x([0-9a-f]+)\z/i  then $1.hex.chr(enc)
         end
@@ -131,7 +133,7 @@ module CGI::Escape
                 else 128
                 end
     string = string.b
-    string.gsub!(/&(apos|amp|quot|gt|lt|\#[0-9]+|\#[xX][0-9A-Fa-f]+);/) do
+    string.gsub!(/&(apos|amp|quot|gt|lt|colon|\#[0-9]+|\#[xX][0-9A-Fa-f]+);/) do
       match = $1.dup
       case match
       when 'apos'                then "'"
@@ -139,6 +141,7 @@ module CGI::Escape
       when 'quot'                then '"'
       when 'gt'                  then '>'
       when 'lt'                  then '<'
+      when 'colon'               then ':'
       when /\A#0*(\d+)\z/
         n = $1.to_i
         if n < charlimit
