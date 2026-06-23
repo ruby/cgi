@@ -953,16 +953,16 @@ class CGI
   # see {Encodings}[https://docs.ruby-lang.org/en/master/language/encodings_rdoc.html]:
   #
   #   # The initial value.
-  #   CGI.accept_charset # => "UTF-8"
+  #   CGI.accept_charset # => #<Encoding:UTF-8>
   #   CGI.new
   #   # =>
   #   #<CGI:0x0000018991db6ae8
-  #    @accept_charset="UTF-8",
+  #    @accept_charset=#<Encoding:UTF-8>,
   #    @accept_charset_error_block=nil,
   #    @cookies={},
   #    @max_multipart_length=134217728,
   #    @multipart=false,
-  #    @options={accept_charset: "UTF-8", max_multipart_length: 134217728},
+  #    @options={accept_charset: #<Encoding:UTF-8>, max_multipart_length: 134217728},
   #    @output_cookies=nil,
   #    @output_hidden=nil,
   #    @params={}>
@@ -1045,12 +1045,12 @@ class CGI
   #   cgi
   #   # =>
   #   #<CGI:0x00000189917aff00
-  #    @accept_charset="UTF-8",
+  #    @accept_charset=#<Encoding:UTF-8>,
   #    @accept_charset_error_block=nil,
   #    @cookies={},
   #    @max_multipart_length=134217728,
   #    @multipart=false,
-  #    @options={accept_charset: "UTF-8", max_multipart_length: 134217728},
+  #    @options={accept_charset: #<Encoding:UTF-8>, max_multipart_length: 134217728},
   #    @output_cookies=nil,
   #    @output_hidden=nil,
   #    @params={}>
