@@ -134,7 +134,7 @@ class CGI
   #   Content-Type: text/html
   #
   # With string argument +content_type+ given,
-  # includes header +Content-Type+ with its default value <tt>'text/html'</tt>:
+  # includes header +Content-Type+ with the given value:
   #
   #   puts cgi.http_header('text/xml')
   #   Content-Type: text/xml
@@ -214,7 +214,7 @@ class CGI
   #     Content-Language: en-US, en-CA
   #
   # <tt>'length'</tt>::
-  #   Sets header +Content-Length+ the given value,
+  #   Sets header +Content-Length+ to the given value,
   #   which may be an integer or a string:
   #
   #     puts cgi.http_header('length' =>  4096)
@@ -228,7 +228,7 @@ class CGI
   # <tt>'nph'</tt>::
   #   If +true+:
   #
-  #   - Adds protocol string and status code as first line,
+  #   - Adds protocol string and status code as first line.
   #   - Adds date as second line.
   #   - Adds headers +Server+ with no value,
   #     and +Connection+ with default value <tt>'close'</tt>;
