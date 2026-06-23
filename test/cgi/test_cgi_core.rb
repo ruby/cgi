@@ -92,6 +92,33 @@ class CGICoreTest < Test::Unit::TestCase
     $stdin = STDIN
   end
 
+  def test_cgi_core_params_POST_without_content_length
+    update_env(
+      'REQUEST_METHOD'  => 'POST',
+      'CONTENT_TYPE'    => 'application/x-www-form-urlencoded',
+    )
+    $stdin = StringIO.new
+    cgi = nil
+    assert_nothing_raised { cgi = CGI.new }
+    assert_equal({}, cgi.params)
+  ensure
+    $stdin = STDIN
+  end
+
+  def test_cgi_core_params_POST_empty_content_length
+    update_env(
+      'REQUEST_METHOD'  => 'POST',
+      'CONTENT_TYPE'    => 'application/x-www-form-urlencoded',
+      'CONTENT_LENGTH'  => '',
+    )
+    $stdin = StringIO.new
+    cgi = nil
+    assert_nothing_raised { cgi = CGI.new }
+    assert_equal({}, cgi.params)
+  ensure
+    $stdin = STDIN
+  end
+
   def test_cgi_core_params_encoding_check
     query_str = 'str=%BE%BE%B9%BE'
     update_env(

@@ -838,13 +838,16 @@ class CGI
     # Handles multipart forms (in particular, forms that involve file uploads).
     # Reads query parameters in the @params field, and cookies into @cookies.
     def initialize_query()
+      content_length = env_table['CONTENT_LENGTH']
+      content_length = nil if content_length == ''
       if ("POST" == env_table['REQUEST_METHOD']) and
         %r|\Amultipart/form-data.*boundary=\"?([^\";,]+)\"?| =~ env_table['CONTENT_TYPE']
         current_max_multipart_length = @max_multipart_length.respond_to?(:call) ? @max_multipart_length.call : @max_multipart_length
         raise StandardError.new("too large multipart data.") if env_table['CONTENT_LENGTH'].to_i > current_max_multipart_length
+        raise StandardError.new("no content length for multipart data.") if content_length.nil?
         boundary = $1.dup
         @multipart = true
-        @params = read_multipart(boundary, Integer(env_table['CONTENT_LENGTH']))
+        @params = read_multipart(boundary, Integer(content_length))
       else
         @multipart = false
         @params = CGI.parse(
@@ -857,7 +860,11 @@ class CGI
                       end
                     when "POST"
                       stdinput.binmode if defined? stdinput.binmode
-                      stdinput.read(Integer(env_table['CONTENT_LENGTH'])) or ''
+                      if content_length.nil?
+                        stdinput.read or ''
+                      else
+                        stdinput.read(Integer(content_length)) or ''
+                      end
                     else
                       read_from_cmdline
                     end.dup.force_encoding(@accept_charset)
