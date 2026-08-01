@@ -44,6 +44,16 @@ class CGIEscapeTest < Test::Unit::TestCase
     assert_equal(Encoding::UTF_8, CGI.escape("\xC0\<\<".dup.force_encoding("UTF-8")).encoding)
   end
 
+  def test_cgi_escape_nil
+    assert_raise(TypeError) { CGI.escape(nil) }
+  end
+
+  def test_cgi_escape_conversion
+    obj = Object.new
+    def obj.to_str = "foo"
+    assert_equal("foo", CGI.escape(obj))
+  end
+
   def test_cgi_unescape
     str = CGI.unescape('%26%3C%3E%22+%E3%82%86%E3%82%93%E3%82%86%E3%82%93')
     assert_equal(@str1, str)
@@ -69,6 +79,10 @@ class CGIEscapeTest < Test::Unit::TestCase
     end;
   end
 
+  def test_cgi_unescape_nil
+    assert_raise(TypeError) { CGI.unescape(nil) }
+  end
+
   def test_cgi_escapeURIComponent
     assert_equal('%26%3C%3E%22%20%E3%82%86%E3%82%93%E3%82%86%E3%82%93', CGI.escapeURIComponent(@str1))
     assert_equal('%26%3C%3E%22%20%E3%82%86%E3%82%93%E3%82%86%E3%82%93'.ascii_only?, CGI.escapeURIComponent(@str1).ascii_only?) if defined?(::Encoding)
@@ -92,6 +106,10 @@ class CGIEscapeTest < Test::Unit::TestCase
     assert_equal(Encoding::US_ASCII, CGI.escapeURIComponent("\xC0\<\<".dup.force_encoding("US-ASCII")).encoding)
     assert_equal(Encoding::ASCII_8BIT, CGI.escapeURIComponent("\xC0\<\<".dup.force_encoding("ASCII-8BIT")).encoding)
     assert_equal(Encoding::UTF_8, CGI.escapeURIComponent("\xC0\<\<".dup.force_encoding("UTF-8")).encoding)
+  end
+
+  def test_cgi_escapeURIComponent_nil
+    assert_raise(TypeError) { CGI.escapeURIComponent(nil) }
   end
 
   def test_cgi_unescapeURIComponent
@@ -126,6 +144,10 @@ class CGIEscapeTest < Test::Unit::TestCase
     end;
   end
 
+  def test_cgi_unescapeURIComponent_nil
+    assert_raise(TypeError) { CGI.unescapeURIComponent(nil) }
+  end
+
   def test_cgi_escapeHTML
     assert_equal("&#39;&amp;&quot;&gt;&lt;", CGI.escapeHTML("'&\"><"))
   end
@@ -153,6 +175,10 @@ class CGIEscapeTest < Test::Unit::TestCase
     assert_not_predicate CGI.escapeHTML("'&\"><".freeze), :frozen?
     assert_not_predicate CGI.escapeHTML("Ruby".dup),      :frozen?
     assert_not_predicate CGI.escapeHTML("Ruby".freeze),   :frozen?
+  end
+
+  def test_cgi_escape_html_nil
+    assert_raise(TypeError) { CGI.escapeHTML(nil) }
   end
 
   def test_cgi_escape_html_large
@@ -245,6 +271,10 @@ class CGIEscapeTest < Test::Unit::TestCase
         assert_equal("aAb".encode(enc), result, name)
         assert_equal(enc, result.encoding, name)
       end
+    end
+
+    def test_cgi_unescapeHTML_nil
+      assert_raise(TypeError) { CGI.unescapeHTML(nil) }
     end
   end
 

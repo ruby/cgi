@@ -18,6 +18,7 @@ module CGI::Escape
   #   url_encoded_string = CGI.escape("'Stop!' said Fred")
   #      # => "%27Stop%21%27+said+Fred"
   def escape(string)
+    string = string_value(string)
     encoding = string.encoding
     buffer = string.b
     buffer.gsub!(/([^ a-zA-Z0-9_.\-~]+)/) do |m|
@@ -31,6 +32,7 @@ module CGI::Escape
   #   string = CGI.unescape("%27Stop%21%27+said+Fred")
   #      # => "'Stop!' said Fred"
   def unescape(string, encoding = @@accept_charset)
+    string = string_value(string)
     str = string.tr('+', ' ')
     str = str.b
     str.gsub!(/((?:%[0-9a-fA-F]{2})+)/) do |m|
@@ -45,6 +47,7 @@ module CGI::Escape
   #   url_encoded_string = CGI.escapeURIComponent("'Stop!' said Fred")
   #      # => "%27Stop%21%27%20said%20Fred"
   def escapeURIComponent(string)
+    string = string_value(string)
     encoding = string.encoding
     buffer = string.b
     buffer.gsub!(/([^a-zA-Z0-9_.\-~]+)/) do |m|
@@ -58,6 +61,7 @@ module CGI::Escape
   #   string = CGI.unescapeURIComponent("%27Stop%21%27+said%20Fred")
   #      # => "'Stop!'+said Fred"
   def unescapeURIComponent(string, encoding = @@accept_charset)
+    string = string_value(string)
     str = string.b
     str.gsub!(/((?:%[0-9a-fA-F]{2})+)/) do |m|
       [m.delete('%')].pack('H*')
@@ -81,6 +85,7 @@ module CGI::Escape
   #   CGI.escapeHTML('Usage: foo "bar" <baz>')
   #      # => "Usage: foo &quot;bar&quot; &lt;baz&gt;"
   def escapeHTML(string)
+    string = string_value(string)
     enc = string.encoding
     unless enc.ascii_compatible?
       if enc.dummy?
@@ -103,6 +108,7 @@ module CGI::Escape
   #   CGI.unescapeHTML("Usage: foo &quot;bar&quot; &lt;baz&gt;")
   #      # => "Usage: foo \"bar\" <baz>"
   def unescapeHTML(string)
+    string = string_value(string)
     enc = string.encoding
     unless enc.ascii_compatible?
       if enc.dummy?
@@ -224,4 +230,10 @@ module CGI::Escape
   # Synonym for CGI.unescapeElement(str)
   alias unescape_element unescapeElement
 
+  private
+
+  # Like StringValue in C
+  def string_value(input)  # :nodoc:
+    String.try_convert(input) || raise(TypeError, "no implicit conversion of #{input.class} into String")
+  end
 end
