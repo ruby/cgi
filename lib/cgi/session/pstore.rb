@@ -24,6 +24,14 @@ class CGI
     # library file pstore.rb.  Session data is marshalled and stored
     # in a file.  File locking and transaction services are provided.
     class PStore
+      PSTORE_OPT = {} # :nodoc:
+      if ::PStore.instance_method(:initialize)
+           .parameters
+           .include?([:key, :follow_symlink])
+        PSTORE_OPT[:follow_symlink] = false
+      end
+      PSTORE_OPT.freeze
+
       # Create a new CGI::Session::PStore instance
       #
       # This constructor is used internally by CGI::Session.  The
@@ -49,7 +57,13 @@ class CGI
       def initialize(session, option={})
         option = {'suffix'=>''}.update(option)
         path, @hash = session.new_store_file(option)
-        @p = ::PStore.new(path)
+
+        # In Ruby 2.6 or earlier, **{} is passed as a positional Hash.
+        @p = if PSTORE_OPT.empty?
+          ::PStore.new(path)
+        else
+          ::PStore.new(path, **PSTORE_OPT)
+        end
         @p.transaction do |p|
           File.chmod(0600, p.path)
         end
