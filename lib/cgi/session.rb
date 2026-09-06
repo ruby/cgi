@@ -149,8 +149,18 @@ class CGI
   #   session.close
   #
   class Session
+    # :stopdoc:
+    common_mode = File::BINARY
+    common_mode |= File::NOFOLLOW if File.const_defined?(:NOFOLLOW)
+    READ_MODE = File::RDONLY|File::SHARE_DELETE|common_mode
+    LOCK_MODE = File::CREAT|File::RDWR|common_mode
+    NEW_MODE = File::CREAT|File::EXCL|File::WRONLY|common_mode
+    # :startdoc:
 
     class NoSession < RuntimeError #:nodoc:
+    end
+
+    class UnsafeSessionFileError < RuntimeError #:nodoc:
     end
 
     # The id of this session.
@@ -230,13 +240,29 @@ class CGI
       path << digest
       path << suffix if suffix
       if File::exist? path
+        self.class.open_store_file(path).close
         hash = nil
       elsif new_session
+        File.open(path, NEW_MODE, 0600) {}
         hash = {}
       else
         raise NoSession, "uninitialized session"
       end
       return path, hash
+    end
+
+    # Windows does not conform to the POSIX permission model.
+    MODE_MASK = /mswin|mingw|bccwin|wince/ =~ RUBY_PLATFORM ? 0 : 0o077 # :nodoc:
+    private_constant :MODE_MASK
+
+    def self.open_store_file(path, mode = READ_MODE)
+      f = File.open(path, mode)
+      stat = f.stat
+      unless stat.owned? and (stat.mode & MODE_MASK).zero?
+        f.close
+        raise UnsafeSessionFileError, "not owned session file"
+      end
+      f
     end
 
     # Create a new CGI::Session object for +request+.
@@ -437,9 +463,10 @@ class CGI
         unless @hash
           @hash = {}
           begin
-            lockf = File.open(@path+".lock", "r")
+            lockf = File.open(@path+".lock", READ_MODE)
             lockf.flock File::LOCK_SH
-            f = File.open(@path, 'r')
+            raise UnsafeSessionFileError, "not owned lock file" unless lockf.stat.owned?
+            f = CGI::Session.open_store_file(@path)
             for line in f
               line.chomp!
               k, v = line.split('=',2)
@@ -457,9 +484,9 @@ class CGI
       def update
         return unless @hash
         begin
-          lockf = File.open(@path+".lock", File::CREAT|File::RDWR, 0600)
+          lockf = File.open(@path+".lock", LOCK_MODE, 0600)
           lockf.flock File::LOCK_EX
-          f = File.open(@path+".new", File::CREAT|File::TRUNC|File::WRONLY, 0600)
+          f = File.open(@path+".new", NEW_MODE, 0600)
           for k,v in @hash
             f.printf "%s=%s\n", CGI.escape(k), CGI.escape(String(Marshal.dump(v)))
           end

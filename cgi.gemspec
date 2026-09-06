@@ -33,6 +33,8 @@ Gem::Specification.new do |spec|
 
   spec.require_paths = ["lib"]
 
+  spec.add_runtime_dependency "pstore"
+
   if Gem::Platform === spec.platform and spec.platform =~ 'java' or RUBY_ENGINE == 'jruby'
     spec.platform = 'java'
     spec.require_paths << "ext/java/org/jruby/ext/cgi/escape/lib"
