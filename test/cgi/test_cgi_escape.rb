@@ -50,7 +50,7 @@ class CGIEscapeTest < Test::Unit::TestCase
 
   def test_cgi_escape_conversion
     obj = Object.new
-    def obj.to_str = "foo"
+    def obj.to_str; "foo"; end
     assert_equal("foo", CGI.escape(obj))
   end
 
