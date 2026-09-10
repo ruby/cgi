@@ -83,6 +83,18 @@ class CGIEscapeTest < Test::Unit::TestCase
     assert_raise(TypeError) { CGI.unescape(nil) }
   end
 
+  def test_cgi_unescape_invalid_byte_sequence
+    # unescape must not raise on bytes that are invalid in the string's own
+    # encoding; escape and unescapeURIComponent already decode on a binary copy.
+    s = "\x80&amp;".dup.force_encoding("UTF-8")
+    assert_equal(s.b, CGI.unescape(s.dup).b)
+    assert_equal(s.b, CGI.unescapeURIComponent(s.dup).b)
+    # ordinary decoding is unchanged
+    assert_equal("a b", CGI.unescape("a+b"))
+    assert_equal("+", CGI.unescape("%2B"))
+    assert_equal("'Stop!' said Fred", CGI.unescape("%27Stop%21%27+said+Fred"))
+  end
+
   def test_cgi_escapeURIComponent
     assert_equal('%26%3C%3E%22%20%E3%82%86%E3%82%93%E3%82%86%E3%82%93', CGI.escapeURIComponent(@str1))
     assert_equal('%26%3C%3E%22%20%E3%82%86%E3%82%93%E3%82%86%E3%82%93'.ascii_only?, CGI.escapeURIComponent(@str1).ascii_only?) if defined?(::Encoding)
