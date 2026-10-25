@@ -404,6 +404,14 @@ class CGIEscapePureRubyTest < Test::Unit::TestCase
     end if defined?(CGI::EscapeExt) and CGI::EscapeExt.method_defined?(:_escapeHTML)
   end
 
+  def test_escapeHTML_type_error_matches_c_extension
+    assert_raise_with_message(TypeError, "no implicit conversion of nil into String")   { CGI.escapeHTML(nil) }
+    assert_raise_with_message(TypeError, "no implicit conversion of true into String")  { CGI.escapeHTML(true) }
+    assert_raise_with_message(TypeError, "no implicit conversion of false into String") { CGI.escapeHTML(false) }
+    assert_raise_with_message(TypeError, "no implicit conversion of nil into String")   { CGI.unescapeHTML(nil) }
+    assert_raise(TypeError) { CGI.escapeHTML(BasicObject.new) }
+  end
+
   include CGIEscapeTest::UnescapeHTMLTests
 
   def test_cgi_escapeHTML_with_invalid_byte_sequence
