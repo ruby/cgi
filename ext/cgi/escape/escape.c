@@ -1,14 +1,21 @@
 #include "ruby.h"
 #include "ruby/encoding.h"
+#include "ruby/util.h"
 
 #ifndef HAVE_RB_LEN_T
 typedef long rb_len_t;
 # define RB_LEN_MAX LONG_MAX
 #endif
 
+#ifndef HAVE_RUBY_SCAN_DIGITS
 RUBY_EXTERN unsigned long ruby_scan_digits(const char *str, ssize_t len, int base, size_t *retlen, int *overflow);
+#endif
+#ifndef HAVE_RUBY_HEXDIGITS_0_
 RUBY_EXTERN const char ruby_hexdigits[];
+#endif
+#ifndef HAVE_RUBY_DIGIT36_TO_NUMBER_TABLE_0_
 RUBY_EXTERN const signed char ruby_digit36_to_number_table[];
+#endif
 #define lower_hexdigits (ruby_hexdigits+0)
 #define upper_hexdigits (ruby_hexdigits+16)
 #define char_to_number(c) ruby_digit36_to_number_table[(unsigned char)(c)]
