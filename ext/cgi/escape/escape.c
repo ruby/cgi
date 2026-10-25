@@ -4,6 +4,7 @@
 
 #ifndef HAVE_RB_LEN_T
 typedef long rb_len_t;
+typedef unsigned long rb_ulen_t;
 # define RB_LEN_MAX LONG_MAX
 #endif
 
@@ -106,7 +107,7 @@ optimized_unescape_html(VALUE str)
     cstr = RSTRING_PTR(str);
 
     for (i = 0; i < len; i++) {
-        unsigned long cc;
+        rb_ulen_t cc;
         char c = cstr[i];
         if (c != '&') continue;
         plen = i - beg;
