@@ -187,7 +187,85 @@ class CGISessionTest < Test::Unit::TestCase
     assert_equal path_sha512, path
   end
 
+  def test_rejects_insecure_session_file
+    session_id = "insecure"
+    path = session_file_store_path("tmpdir"=>@session_dir,
+                                   "session_id"=>session_id)
+    File.write(path, "")
+    File.chmod(0644, path)
+
+    assert_raise(CGI::Session::UnsafeSessionFileError) do
+      CGI::Session.new(Object.new, "tmpdir"=>@session_dir,
+                                   "session_id"=>session_id)
+    end
+  end unless CGI::Session.const_get(:MODE_MASK).zero?
+
+  def test_filestore_update_rejects_existing_new_file
+    session = CGI::Session.new(Object.new, "tmpdir"=>@session_dir,
+                                           "session_id"=>"stale")
+    path = session.instance_variable_get(:@dbman).instance_variable_get(:@path)
+    new_path = path + ".new"
+    File.write(new_path, "existing")
+    session["key"] = "value"
+
+    assert_raise(Errno::EEXIST) do
+      session.close
+    end
+    assert_equal("existing", File.read(new_path))
+  ensure
+    session.delete if session
+  end
+
+  def test_pstore_does_not_enable_thread_safety_for_compatibility
+    session = CGI::Session.new(Object.new, "tmpdir"=>@session_dir,
+                                           "session_id"=>"pstore-compat",
+                                           "database_manager"=>CGI::Session::PStore)
+    pstore = session.instance_variable_get(:@dbman).instance_variable_get(:@p)
+
+    assert_equal(false, pstore.instance_variable_get(:@thread_safe))
+  ensure
+    session.delete if session
+  end if defined?(::PStore)
+
+  def test_pstore_rejects_session_file_replaced_by_symlink
+    omit("O_NOFOLLOW is not supported") unless nofollow_supported?
+
+    session = CGI::Session.new(Object.new, "tmpdir"=>@session_dir,
+                                           "session_id"=>"pstore-symlink",
+                                           "database_manager"=>CGI::Session::PStore)
+    session["key"] = "secret"
+    pstore = session.instance_variable_get(:@dbman).instance_variable_get(:@p)
+    target = File.join(@session_dir, "target")
+    File.write(target, "")
+    File.unlink(pstore.path)
+    File.symlink("target", pstore.path)
+
+    assert_raise(Errno::ELOOP) do
+      session.close
+    end
+    assert_empty(File.read(target))
+  ensure
+    session.delete if session
+  end if defined?(::PStore) and !CGI::Session::PStore::PSTORE_OPT.empty?
+
   private
+
+  def nofollow_supported?
+    return false unless File.const_defined?(:NOFOLLOW)
+
+    target = File.join(@session_dir, "nofollow-target")
+    link = File.join(@session_dir, "nofollow-link")
+    File.write(target, "")
+    File.symlink(target, link)
+    File.open(link, File::RDONLY|File::NOFOLLOW).close
+    false
+  rescue Errno::ELOOP
+    true
+  rescue NotImplementedError, SystemCallError
+    false
+  ensure
+    [target, link].each {|file| File.unlink(file) if file}
+  end
 
   def assert_session_filestore_path(path, dir: @session_dir, prefix: "cgi_sid_", suffix: nil)
     base = File.basename(path)
