@@ -177,6 +177,64 @@ class CGIEscapeTest < Test::Unit::TestCase
     assert_not_predicate CGI.escapeHTML("Ruby".freeze),   :frozen?
   end
 
+  HTML_ESCAPES = { "'" => "&#39;", "&" => "&amp;", '"' => "&quot;", "<" => "&lt;", ">" => "&gt;" }.freeze
+
+  # Each escapable character at every position, for lengths around the
+  # 16-, 32- and 64-byte steps of the SIMD code.
+  def test_cgi_escape_html_every_position
+    [*0..80, 127, 128, 129].each do |len|
+      assert_equal("a" * len, CGI.escapeHTML("a" * len))
+      len.times do |i|
+        HTML_ESCAPES.each do |char, escaped|
+          str = "a" * len
+          str[i] = char
+          assert_equal("a" * i + escaped + "a" * (len - i - 1), CGI.escapeHTML(str), "len=#{len} i=#{i} char=#{char}")
+        end
+      end
+    end
+  end
+
+  # Every other byte value is kept as is, including those that share a low
+  # nibble or the low 7 bits with an escapable character.
+  def test_cgi_escape_html_other_bytes
+    (0..255).each do |byte|
+      str = ("x" * 40).b
+      str.setbyte(20, byte)
+      expected = HTML_ESCAPES.fetch(byte.chr, byte.chr.b)
+      assert_equal(("x" * 20).b + expected.b + ("x" * 19).b, CGI.escapeHTML(str).b, "byte=#{byte}")
+    end
+  end
+
+  # Every k-th byte needs escaping, from every 8th byte to every byte.
+  def test_cgi_escape_html_dense
+    specials = HTML_ESCAPES.keys
+    [*0..80, 127, 128, 129, 255, 256, 257].each do |len|
+      [1, 2, 3, 4, 8].each do |k|
+        str = Array.new(len) { |i| i % k == 0 ? specials[i % specials.size] : "a" }.join
+        assert_equal(str.gsub(/['&"<>]/, HTML_ESCAPES), CGI.escapeHTML(str), "len=#{len} k=#{k}")
+      end
+    end
+  end
+
+  # Clean prefixes of 15 to 1000 bytes before the first byte to escape.
+  def test_cgi_escape_html_clean_prefix
+    [15, 16, 17, 31, 32, 33, 255, 256, 257, 1000].each do |len|
+      str = "a" * len + "<b>&\"'" + "c" * 40
+      assert_equal("a" * len + "&lt;b&gt;&amp;&quot;&#39;" + "c" * 40, CGI.escapeHTML(str), "len=#{len}")
+    end
+  end
+
+  # Strings that start at every offset inside a shared buffer.
+  def test_cgi_escape_html_unaligned
+    base = "0123456789<abc>&def'ghi\"jkl" * 10
+    32.times do |offset|
+      [0, 1, 15, 16, 17, 63, 64, 65, 200].each do |len|
+        str = base.byteslice(offset, len)
+        assert_equal(str.gsub(/['&"<>]/, HTML_ESCAPES), CGI.escapeHTML(str), "offset=#{offset} len=#{len}")
+      end
+    end
+  end
+
   def test_cgi_escape_html_nil
     assert_raise(TypeError) { CGI.escapeHTML(nil) }
   end
