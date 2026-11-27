@@ -33,8 +33,8 @@ module CGI::Escape
   #      # => "'Stop!' said Fred"
   def unescape(string, encoding = @@accept_charset)
     string = string_value(string)
-    str = string.tr('+', ' ')
-    str = str.b
+    str = string.b
+    str.tr!('+', ' ')
     str.gsub!(/((?:%[0-9a-fA-F]{2})+)/) do |m|
       [m.delete('%')].pack('H*')
     end
