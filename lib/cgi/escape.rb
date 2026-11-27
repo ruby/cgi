@@ -234,6 +234,6 @@ module CGI::Escape
 
   # Like StringValue in C
   def string_value(input)  # :nodoc:
-    String.try_convert(input) || raise(TypeError, "no implicit conversion of #{input.class} into String")
+    String === input ? input : "" + input
   end
 end
